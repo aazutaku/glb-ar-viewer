@@ -6,7 +6,7 @@ import { useState } from "react";
 
 const store = createXRStore({
   customSessionInit: {
-    requiredFeatures: ["local", "anchors", "dom-overlay", "hit-test"],
+    requiredFeatures: ["local", "anchors", "hit-test"],
   },
 });
 
@@ -28,7 +28,11 @@ export default function Page() {
         </button>
       </div>
 
-      <Canvas>
+      <Canvas
+        onCreated={({ gl }) => {
+          gl.xr.setReferenceSpaceType("local"); // ← これがエラーの原因回避になります
+        }}
+      >
         <XR store={store}>
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
