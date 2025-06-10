@@ -6,8 +6,7 @@ import { useState } from "react";
 
 const store = createXRStore({
   customSessionInit: {
-    requiredFeatures: ["local", "hit-test"],
-    optionalFeatures: ["dom-overlay", "anchors"],
+    requiredFeatures: ["local", "anchors", "dom-overlay", "hit-test"],
   },
 });
 
