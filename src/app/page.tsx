@@ -28,7 +28,7 @@ export default function Page() {
   };
 
   return (
-    <div className="w-screen h-screen bg-black relative">
+    <div className="w-screen h-screen relative">
       <div className="absolute top-4 left-4 z-10 flex gap-4">
         <button
           onClick={handleEnterAR}
