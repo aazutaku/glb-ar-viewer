@@ -2,11 +2,11 @@
 
 import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useGLTF } from "@react-three/drei";
 
 function Model() {
-  const { scene } = useGLTF("/model/ninja.glb");
+  const { scene } = useGLTF("/models/ninja.glb");
   scene.scale.set(0.5, 0.5, 0.5);
   scene.position.set(0, 0, -1);
   return <primitive object={scene} />;
@@ -16,6 +16,25 @@ const store = createXRStore();
 
 export default function Page() {
   const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const onLaunch = (e: Event) => {
+      const customEvent = e as CustomEvent<{
+        launchRequired: boolean;
+        launchUrl: string;
+      }>;
+
+      if (customEvent.detail.launchRequired) {
+        window.location.href = customEvent.detail.launchUrl; // iOS対応用リダイレクト
+      }
+    };
+
+    window.addEventListener("vlaunch-initialized", onLaunch);
+
+    return () => {
+      window.removeEventListener("vlaunch-initialized", onLaunch);
+    };
+  }, []);
 
   return (
     <div className="w-screen h-screen bg-black relative">
