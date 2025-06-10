@@ -40,7 +40,10 @@ export default function Page() {
 
     store
       .enterAR()
-      .then(() => setStatus("✅ ARセッション開始！"))
+      .then(() => {
+        alert("✅  ARセッション開始！");
+        setStatus("✅ ARセッション開始！");
+      })
       .catch((err) => {
         alert("❌ AR開始失敗: " + err.message);
         setStatus(`❌ AR開始失敗: ${err.message}`);
