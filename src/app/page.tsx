@@ -7,8 +7,8 @@ import { useGLTF } from "@react-three/drei";
 
 function Model() {
   const { scene } = useGLTF("/models/ninja.glb");
-  scene.scale.set(0.5, 0.5, 0.5);
-  scene.position.set(0, 0, -1);
+  scene.scale.set(20, 20, 20);
+  scene.position.set(0, 0, -10);
   return <primitive object={scene} />;
 }
 
