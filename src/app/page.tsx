@@ -1,22 +1,30 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { XR, createXRStore } from "@react-three/xr";
-import { useState } from "react";
-
-const store = createXRStore({
-  customSessionInit: {
-    requiredFeatures: ["local"],
-    optionalFeatures: ["hit-test", "anchors", "dom-overlay"],
-    domOverlay: { root: document.body }, // 必須！
-  },
-});
+import { XR, createXRStore, XRStore } from "@react-three/xr";
+import { useEffect, useState } from "react";
 
 export default function Page() {
+  const [store, setStore] = useState<XRStore | null>(null);
   const [red, setRed] = useState(false);
 
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      const newStore = createXRStore({
+        customSessionInit: {
+          requiredFeatures: ["local"],
+          optionalFeatures: ["hit-test", "anchors", "dom-overlay"],
+          domOverlay: { root: document.body }, // ← ここはクライアントのみ
+        },
+      });
+      setStore(newStore);
+    }
+  }, []);
+
   const handleEnterAR = async () => {
-    store.enterAR();
+    if (store) {
+      await store.enterAR();
+    }
   };
 
   return (
@@ -25,29 +33,32 @@ export default function Page() {
         <button
           onClick={handleEnterAR}
           className="p-3 bg-white text-black rounded"
+          disabled={!store}
         >
           Enter AR
         </button>
       </div>
 
-      <Canvas
-        onCreated={({ gl }) => {
-          gl.xr.setReferenceSpaceType("local");
-        }}
-      >
-        <XR store={store}>
-          <ambientLight />
-          <directionalLight position={[1, 2, 3]} />
-          <mesh
-            pointerEventsType={{ deny: "grab" }}
-            onClick={() => setRed(!red)}
-            position={[0, 1, -1]}
-          >
-            <boxGeometry />
-            <meshBasicMaterial color={red ? "red" : "blue"} />
-          </mesh>
-        </XR>
-      </Canvas>
+      {store && (
+        <Canvas
+          onCreated={({ gl }) => {
+            gl.xr.setReferenceSpaceType("local");
+          }}
+        >
+          <XR store={store}>
+            <ambientLight />
+            <directionalLight position={[1, 2, 3]} />
+            <mesh
+              pointerEventsType={{ deny: "grab" }}
+              onClick={() => setRed(!red)}
+              position={[0, 1, -1]}
+            >
+              <boxGeometry />
+              <meshBasicMaterial color={red ? "red" : "blue"} />
+            </mesh>
+          </XR>
+        </Canvas>
+      )}
     </div>
   );
 }
