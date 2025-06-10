@@ -46,6 +46,8 @@ export default function Page() {
       }
     };
 
+    setStatus("🧪 WebXRサポートチェック中...");
+
     window.addEventListener("vlaunch-initialized", onLaunch);
     return () => {
       window.removeEventListener("vlaunch-initialized", onLaunch);
@@ -53,15 +55,6 @@ export default function Page() {
   }, []);
 
   const handleEnterAR = async () => {
-    setStatus("🧪 WebXRサポートチェック中...");
-
-    const error = await checkWebXRSupport();
-    if (error) {
-      alert(error);
-      setStatus(error);
-      return;
-    }
-
     setStatus("🟡 AR セッション開始中...");
     setEnabled(true);
 
@@ -75,6 +68,20 @@ export default function Page() {
         alert("❌ AR開始失敗: " + err.message);
         setStatus(`❌ AR開始失敗: ${err.message}`);
       });
+  };
+
+  const handleCheck = async () => {
+    setStatus("🧪 WebXRサポートチェック中...");
+
+    const error = await checkWebXRSupport();
+    if (error) {
+      alert(error);
+      setStatus(error);
+      return;
+    }
+    alert("問題なし");
+    setStatus("問題なし");
+    return;
   };
 
   return (
@@ -92,6 +99,13 @@ export default function Page() {
           Enter AR
         </button>
       )}
+
+      <button
+        onClick={handleCheck}
+        className="absolute z-10 p-3 m-4 bg-white text-black rounded"
+      >
+        Check
+      </button>
 
       <Canvas>
         <XR store={store}>
