@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const store = createXRStore();
 
@@ -28,31 +28,6 @@ export default function Page() {
   const [enabled, setEnabled] = useState(false);
   const [red, setRed] = useState(false);
   const [status, setStatus] = useState("📄 初期化中...");
-
-  useEffect(() => {
-    setStatus("📡 Variant イベント待機中");
-
-    const onLaunch = (e: Event) => {
-      const customEvent = e as CustomEvent<{
-        launchRequired: boolean;
-        launchUrl: string;
-      }>;
-
-      setStatus("🚀 Variant イベント受信");
-
-      if (customEvent.detail.launchRequired) {
-        setStatus("🔁 iOSリダイレクト中...");
-        window.location.href = customEvent.detail.launchUrl;
-      }
-    };
-
-    setStatus("🧪 WebXRサポートチェック中...");
-
-    window.addEventListener("vlaunch-initialized", onLaunch);
-    return () => {
-      window.removeEventListener("vlaunch-initialized", onLaunch);
-    };
-  }, []);
 
   const handleEnterAR = async () => {
     setStatus("🟡 AR セッション開始中...");
