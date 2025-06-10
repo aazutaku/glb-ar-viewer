@@ -47,14 +47,13 @@ export default function Page() {
         <XR store={store}>
           <ambientLight intensity={1} />
           <directionalLight position={[1, 2, 3]} />
-
           <mesh
             pointerEventsType={{ deny: "grab" }}
             onClick={() => setRed(!red)}
             position={[0, 1, -1]}
           >
             <boxGeometry />
-            <meshStandardMaterial color={red ? "red" : "blue"} />
+            <meshBasicMaterial color={red ? "red" : "blue"} />
           </mesh>
         </XR>
       </Canvas>
