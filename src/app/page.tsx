@@ -6,6 +6,24 @@ import { useEffect, useState } from "react";
 
 const store = createXRStore();
 
+async function checkWebXRSupport(): Promise<string | null> {
+  if (!("xr" in navigator) || !navigator.xr) {
+    return "❌ WebXR 未対応：navigator.xr が存在しません";
+  }
+
+  try {
+    const isSupported = await navigator.xr.isSessionSupported("immersive-ar");
+    return isSupported
+      ? null
+      : "❌ WebXR はあるが AR セッション（immersive-ar）に非対応";
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      return `❌ WebXR エラー: ${e.message}`;
+    }
+    return "❌ WebXR エラー: 不明なエラーが発生しました";
+  }
+}
+
 export default function Page() {
   const [enabled, setEnabled] = useState(false);
   const [red, setRed] = useState(false);
@@ -34,14 +52,23 @@ export default function Page() {
     };
   }, []);
 
-  const handleEnterAR = () => {
+  const handleEnterAR = async () => {
+    setStatus("🧪 WebXRサポートチェック中...");
+
+    const error = await checkWebXRSupport();
+    if (error) {
+      alert(error);
+      setStatus(error);
+      return;
+    }
+
     setStatus("🟡 AR セッション開始中...");
     setEnabled(true);
 
     store
       .enterAR()
       .then(() => {
-        alert("✅  ARセッション開始！");
+        alert("✅ ARセッション開始！");
         setStatus("✅ ARセッション開始！");
       })
       .catch((err) => {
@@ -68,6 +95,8 @@ export default function Page() {
 
       <Canvas>
         <XR store={store}>
+          <ambientLight />
+          <directionalLight position={[1, 2, 3]} />
           <mesh
             pointerEventsType={{ deny: "grab" }}
             onClick={() => setRed(!red)}
