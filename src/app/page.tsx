@@ -91,21 +91,23 @@ export default function Page() {
         {status}
       </div>
 
-      {!enabled && (
+      <div className="absolute top-4 left-4 z-10 flex gap-4">
         <button
-          onClick={handleEnterAR}
-          className="absolute z-10 p-3 m-4 bg-white text-black rounded"
+          onClick={handleCheck}
+          className="p-3 bg-white text-black rounded"
         >
-          Enter AR
+          Check
         </button>
-      )}
 
-      <button
-        onClick={handleCheck}
-        className="absolute z-10 p-3 m-4 bg-white text-black rounded"
-      >
-        Check
-      </button>
+        {!enabled && (
+          <button
+            onClick={handleEnterAR}
+            className="p-3 bg-white text-black rounded"
+          >
+            Enter AR
+          </button>
+        )}
+      </div>
 
       <Canvas>
         <XR store={store}>
