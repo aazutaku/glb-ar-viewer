@@ -4,7 +4,12 @@ import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
 import { useState } from "react";
 
-const store = createXRStore();
+const store = createXRStore({
+  customSessionInit: {
+    requiredFeatures: ["local", "hit-test"],
+    optionalFeatures: ["dom-overlay", "anchors"],
+  },
+});
 
 async function checkWebXRSupport(): Promise<string | null> {
   if (!("xr" in navigator) || !navigator.xr) {
