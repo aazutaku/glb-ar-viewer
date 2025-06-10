@@ -2,13 +2,9 @@
 
 import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const store = createXRStore({
-  customSessionInit: {
-    requiredFeatures: ["local", "anchors", "dom-overlay", "hit-test"],
-  },
-});
+const store = createXRStore();
 
 async function checkWebXRSupport(): Promise<string | null> {
   if (!("xr" in navigator) || !navigator.xr) {
@@ -33,20 +29,19 @@ export default function Page() {
   const [red, setRed] = useState(false);
   const [status, setStatus] = useState("📄 初期化中...");
 
+  useEffect(() => {
+    if (!navigator.xr) return;
+
+    navigator.xr.requestSession("immersive-ar", {
+      requiredFeatures: ["local", "anchors", "dom-overlay", "hit-test"],
+    });
+  }, []);
+
   const handleEnterAR = async () => {
     setStatus("🟡 AR セッション開始中...");
     setEnabled(true);
 
-    store
-      .enterAR()
-      .then(() => {
-        alert("✅ ARセッション開始！");
-        setStatus("✅ ARセッション開始！");
-      })
-      .catch((err) => {
-        alert("❌ AR開始失敗: " + err.message);
-        setStatus(`❌ AR開始失敗: ${err.message}`);
-      });
+    store.enterAR();
   };
 
   const handleCheck = async () => {
