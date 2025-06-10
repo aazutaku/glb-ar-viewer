@@ -5,8 +5,8 @@ import { XR, createXRStore } from "@react-three/xr";
 import { Suspense, useState } from "react";
 import { useGLTF } from "@react-three/drei";
 
-function UFO() {
-  const { scene } = useGLTF("/ufo.glb");
+function Model() {
+  const { scene } = useGLTF("/model/ninja.glb");
   scene.scale.set(0.5, 0.5, 0.5);
   scene.position.set(0, 0, -1);
   return <primitive object={scene} />;
@@ -35,7 +35,7 @@ export default function Page() {
         <XR store={store}>
           <ambientLight />
           <Suspense fallback={null}>
-            <UFO />
+            <Model />
           </Suspense>
         </XR>
       </Canvas>
