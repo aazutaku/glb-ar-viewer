@@ -1,12 +1,34 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { XR, createXRStore, XRStore } from "@react-three/xr";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import * as THREE from "three";
+
+function DebugFrame({
+  meshRef,
+}: {
+  meshRef: React.RefObject<THREE.Mesh | null>;
+}) {
+  useFrame(({ camera }) => {
+    if (meshRef.current) {
+      const meshPos = meshRef.current.position;
+      console.log("Mesh position:", meshPos.x, meshPos.y, meshPos.z);
+    }
+    console.log(
+      "Camera position:",
+      camera.position.x,
+      camera.position.y,
+      camera.position.z
+    );
+  });
+  return null;
+}
 
 export default function Page() {
   const [store, setStore] = useState<XRStore | null>(null);
   const [red, setRed] = useState(false);
+  const meshRef = useRef<THREE.Mesh>(null);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -14,7 +36,6 @@ export default function Page() {
         customSessionInit: {
           requiredFeatures: ["local"],
           optionalFeatures: ["hit-test", "anchors", "dom-overlay"],
-          domOverlay: { root: document.body },
         },
       });
       setStore(newStore);
@@ -23,7 +44,9 @@ export default function Page() {
 
   const handleEnterAR = async () => {
     if (store) {
+      console.log("Trying to enter AR");
       await store.enterAR();
+      console.log("Entered AR session");
     }
   };
 
@@ -41,20 +64,23 @@ export default function Page() {
 
       {store && (
         <Canvas
-          gl={{ alpha: true }}
-          style={{ background: "transparent" }}
-          frameloop="always"
-          onCreated={({ gl }) => {
+          onCreated={({ gl, scene, camera }) => {
             gl.xr.setReferenceSpaceType("local");
+
+            gl.setAnimationLoop(() => {
+              gl.render(scene, camera);
+            });
           }}
         >
           <XR store={store}>
             <ambientLight />
             <directionalLight position={[1, 2, 3]} />
+            <DebugFrame meshRef={meshRef} />
             <mesh
+              ref={meshRef}
               pointerEventsType={{ deny: "grab" }}
               onClick={() => setRed(!red)}
-              position={[0, 0, -0.5]}
+              position={[0, 1, -1]}
             >
               <boxGeometry />
               <meshBasicMaterial color={red ? "red" : "blue"} />
