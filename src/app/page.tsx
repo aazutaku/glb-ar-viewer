@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { XR, createXRStore, XRStore } from "@react-three/xr";
 import { useEffect, useState, useRef } from "react";
 import * as THREE from "three";
+import { ARButton } from "three/examples/jsm/webxr/ARButton.js";
 
 function DebugFrame({
   meshRef,
@@ -18,18 +19,21 @@ function DebugFrame({
       direction.applyQuaternion(camera.quaternion);
       const newPosition = camera.position.clone().add(direction);
       meshRef.current.position.copy(newPosition);
-
-      console.log("Mesh position:", newPosition);
-      console.log("Camera position:", camera.position);
     }
   });
   return null;
+}
+
+function isIOS() {
+  if (typeof window === "undefined") return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
 }
 
 export default function Page() {
   const [store, setStore] = useState<XRStore | null>(null);
   const [red, setRed] = useState(false);
   const meshRef = useRef<THREE.Mesh>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -43,6 +47,17 @@ export default function Page() {
     }
   }, []);
 
+  useEffect(() => {
+    if (isIOS() && rendererRef.current) {
+      // iOS時のみ ARButton 追加
+      const button = ARButton.createButton(rendererRef.current, {
+        requiredFeatures: ["local", "hit-test", "dom-overlay"],
+        domOverlay: { root: document.body }, // ここは好きなDOM指定できる
+      });
+      document.body.appendChild(button);
+    }
+  }, []);
+
   const handleEnterAR = async () => {
     if (store) {
       console.log("Trying to enter AR");
@@ -53,21 +68,24 @@ export default function Page() {
 
   return (
     <div className="w-screen h-screen relative">
-      <div className="absolute top-4 left-4 z-10 flex gap-4">
-        <button
-          onClick={handleEnterAR}
-          className="p-3 bg-white text-black rounded"
-          disabled={!store}
-        >
-          Enter AR
-        </button>
-      </div>
+      {!isIOS() && (
+        <div className="absolute top-4 left-4 z-10 flex gap-4">
+          <button
+            onClick={handleEnterAR}
+            className="p-3 bg-white text-black rounded"
+            disabled={!store}
+          >
+            Enter AR: 標準
+          </button>
+        </div>
+      )}
 
       <Canvas
         id="ar-canvas"
         style={{ backgroundColor: "transparent" }}
         onCreated={({ gl }) => {
           gl.xr.setReferenceSpaceType("local");
+          rendererRef.current = gl;
         }}
       >
         {store && (
