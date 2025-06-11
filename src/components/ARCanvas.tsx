@@ -2,9 +2,8 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
-import { ARButton } from "three/examples/jsm/webxr/ARButton.js";
 
 function DebugFrame({
   meshRef,
@@ -24,14 +23,8 @@ function DebugFrame({
   return null;
 }
 
-function isIOS() {
-  if (typeof window === "undefined") return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent);
-}
-
 export default function ARCanvas() {
   const meshRef = useRef<THREE.Mesh>(null);
-  const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
   const [store] = useState(() =>
     createXRStore({
       customSessionInit: {
@@ -42,22 +35,9 @@ export default function ARCanvas() {
     })
   );
 
-  useEffect(() => {
-    if (isIOS() && renderer) {
-      console.log("isIOS-ARBUTTON-CREATE");
-      const button = ARButton.createButton(renderer, {
-        requiredFeatures: ["local", "hit-test", "dom-overlay"],
-        domOverlay: { root: document.body },
-      });
-      document.body.appendChild(button);
-    }
-  }, [renderer]);
-
   const handleEnterAR = async () => {
     if (store) {
-      console.log("Trying to enter AR");
       await store.enterAR();
-      console.log("Entered AR session");
     }
   };
 
@@ -68,7 +48,7 @@ export default function ARCanvas() {
           onClick={handleEnterAR}
           className="p-3 bg-white text-black rounded"
         >
-          Enter AR: 標準
+          Enter AR
         </button>
       </div>
 
@@ -77,7 +57,6 @@ export default function ARCanvas() {
         onCreated={({ gl }) => {
           gl.xr.enabled = true;
           gl.xr.setReferenceSpaceType("local");
-          setRenderer(gl);
         }}
       >
         <XR store={store}>
