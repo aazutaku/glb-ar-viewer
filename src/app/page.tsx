@@ -63,12 +63,13 @@ export default function Page() {
         </button>
       </div>
 
-      {store && (
-        <Canvas
-          onCreated={({ gl }) => {
-            gl.xr.setReferenceSpaceType("local");
-          }}
-        >
+      <Canvas
+        id="ar-canvas"
+        onCreated={({ gl }) => {
+          gl.xr.setReferenceSpaceType("local");
+        }}
+      >
+        {store && (
           <XR store={store}>
             <ambientLight />
             <directionalLight position={[1, 2, 3]} />
@@ -83,8 +84,8 @@ export default function Page() {
               <meshBasicMaterial color={red ? "red" : "blue"} />
             </mesh>
           </XR>
-        </Canvas>
-      )}
+        )}
+      </Canvas>
     </div>
   );
 }
