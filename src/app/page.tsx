@@ -1,14 +1,35 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { XR, createXRStore, XRStore } from "@react-three/xr";
 import { useEffect, useState, useRef } from "react";
 import * as THREE from "three";
 
+function DebugFrame({
+  meshRef,
+}: {
+  meshRef: React.RefObject<THREE.Mesh | null>;
+}) {
+  const { camera } = useThree();
+  useFrame(() => {
+    if (meshRef.current) {
+      const distance = 1;
+      const direction = new THREE.Vector3(0, 1, -distance);
+      direction.applyQuaternion(camera.quaternion);
+      const newPosition = camera.position.clone().add(direction);
+      meshRef.current.position.copy(newPosition);
+
+      console.log("Mesh position:", newPosition);
+      console.log("Camera position:", camera.position);
+    }
+  });
+  return null;
+}
+
 export default function Page() {
   const [store, setStore] = useState<XRStore | null>(null);
   const [red, setRed] = useState(false);
-  const meshRef = useRef<THREE.Mesh | null>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -30,24 +51,6 @@ export default function Page() {
     }
   };
 
-  // 毎フレーム mesh をカメラの前に移動させる
-  function MoveMeshInFront() {
-    useFrame(({ camera }) => {
-      if (meshRef.current) {
-        const distance = 0.5; // 50cm前
-        const direction = new THREE.Vector3(0, 0, -distance);
-        direction.applyQuaternion(camera.quaternion);
-        const newPosition = camera.position.clone().add(direction);
-        meshRef.current.position.copy(newPosition);
-
-        // デバッグ出力
-        console.log("Mesh position:", newPosition);
-        console.log("Camera position:", camera.position);
-      }
-    });
-    return null;
-  }
-
   return (
     <div className="w-screen h-screen relative">
       <div className="absolute top-4 left-4 z-10 flex gap-4">
@@ -62,22 +65,19 @@ export default function Page() {
 
       {store && (
         <Canvas
-          onCreated={({ gl, scene, camera }) => {
+          onCreated={({ gl }) => {
             gl.xr.setReferenceSpaceType("local");
-
-            gl.setAnimationLoop(() => {
-              gl.render(scene, camera);
-            });
           }}
         >
           <XR store={store}>
             <ambientLight />
             <directionalLight position={[1, 2, 3]} />
-            <MoveMeshInFront />
+            <DebugFrame meshRef={meshRef} />
             <mesh
               ref={meshRef}
               pointerEventsType={{ deny: "grab" }}
               onClick={() => setRed(!red)}
+              position={[0, 1, -1]}
             >
               <boxGeometry />
               <meshBasicMaterial color={red ? "red" : "blue"} />
