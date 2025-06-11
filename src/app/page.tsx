@@ -5,30 +5,10 @@ import { XR, createXRStore, XRStore } from "@react-three/xr";
 import { useEffect, useState, useRef } from "react";
 import * as THREE from "three";
 
-function DebugFrame({
-  meshRef,
-}: {
-  meshRef: React.RefObject<THREE.Mesh | null>;
-}) {
-  useFrame(({ camera }) => {
-    if (meshRef.current) {
-      const meshPos = meshRef.current.position;
-      console.log("Mesh position:", meshPos.x, meshPos.y, meshPos.z);
-    }
-    console.log(
-      "Camera position:",
-      camera.position.x,
-      camera.position.y,
-      camera.position.z
-    );
-  });
-  return null;
-}
-
 export default function Page() {
   const [store, setStore] = useState<XRStore | null>(null);
   const [red, setRed] = useState(false);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Mesh | null>(null);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -49,6 +29,24 @@ export default function Page() {
       console.log("Entered AR session");
     }
   };
+
+  // 毎フレーム mesh をカメラの前に移動させる
+  function MoveMeshInFront() {
+    useFrame(({ camera }) => {
+      if (meshRef.current) {
+        const distance = 0.5; // 50cm前
+        const direction = new THREE.Vector3(0, 0, -distance);
+        direction.applyQuaternion(camera.quaternion);
+        const newPosition = camera.position.clone().add(direction);
+        meshRef.current.position.copy(newPosition);
+
+        // デバッグ出力
+        console.log("Mesh position:", newPosition);
+        console.log("Camera position:", camera.position);
+      }
+    });
+    return null;
+  }
 
   return (
     <div className="w-screen h-screen relative">
@@ -75,12 +73,11 @@ export default function Page() {
           <XR store={store}>
             <ambientLight />
             <directionalLight position={[1, 2, 3]} />
-            <DebugFrame meshRef={meshRef} />
+            <MoveMeshInFront />
             <mesh
               ref={meshRef}
               pointerEventsType={{ deny: "grab" }}
               onClick={() => setRed(!red)}
-              position={[0, 1, -1]}
             >
               <boxGeometry />
               <meshBasicMaterial color={red ? "red" : "blue"} />
