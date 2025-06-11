@@ -35,8 +35,9 @@ export default function ARCanvas() {
   const [store] = useState(() =>
     createXRStore({
       customSessionInit: {
-        requiredFeatures: ["local"],
-        optionalFeatures: ["hit-test", "anchors", "dom-overlay"],
+        requiredFeatures: ["local", "hit-test", "dom-overlay"],
+        optionalFeatures: ["anchors"],
+        domOverlay: { root: document.body },
       },
     })
   );
@@ -62,16 +63,14 @@ export default function ARCanvas() {
 
   return (
     <div className="w-screen h-screen relative">
-      {!isIOS() && (
-        <div className="absolute top-4 left-4 z-10 flex gap-4">
-          <button
-            onClick={handleEnterAR}
-            className="p-3 bg-white text-black rounded"
-          >
-            Enter AR: 標準
-          </button>
-        </div>
-      )}
+      <div className="absolute top-4 left-4 z-10 flex gap-4">
+        <button
+          onClick={handleEnterAR}
+          className="p-3 bg-white text-black rounded"
+        >
+          Enter AR: 標準
+        </button>
+      </div>
 
       <Canvas
         style={{ backgroundColor: "transparent" }}
