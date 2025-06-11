@@ -14,7 +14,7 @@ export default function Page() {
         customSessionInit: {
           requiredFeatures: ["local"],
           optionalFeatures: ["hit-test", "anchors", "dom-overlay"],
-          domOverlay: { root: document.body }, // ← ここはクライアントのみ
+          domOverlay: { root: document.body },
         },
       });
       setStore(newStore);
@@ -41,6 +41,9 @@ export default function Page() {
 
       {store && (
         <Canvas
+          gl={{ alpha: true }}
+          style={{ background: "transparent" }}
+          frameloop="always"
           onCreated={({ gl }) => {
             gl.xr.setReferenceSpaceType("local");
           }}
@@ -51,7 +54,7 @@ export default function Page() {
             <mesh
               pointerEventsType={{ deny: "grab" }}
               onClick={() => setRed(!red)}
-              position={[0, 1, -1]}
+              position={[0, 0, -0.5]}
             >
               <boxGeometry />
               <meshBasicMaterial color={red ? "red" : "blue"} />
