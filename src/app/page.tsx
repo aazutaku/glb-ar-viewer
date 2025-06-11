@@ -65,6 +65,7 @@ export default function Page() {
 
       <Canvas
         id="ar-canvas"
+        style={{ backgroundColor: "rgba(255,0,0,0.2)" }}
         onCreated={({ gl }) => {
           gl.xr.setReferenceSpaceType("local");
         }}
