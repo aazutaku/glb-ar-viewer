@@ -33,7 +33,7 @@ export default function Page() {
   const [store, setStore] = useState<XRStore | null>(null);
   const [red, setRed] = useState(false);
   const meshRef = useRef<THREE.Mesh>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -48,15 +48,14 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    if (isIOS() && rendererRef.current) {
-      // iOS時のみ ARButton 追加
-      const button = ARButton.createButton(rendererRef.current, {
+    if (isIOS() && renderer) {
+      const button = ARButton.createButton(renderer, {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
-        domOverlay: { root: document.body }, // ここは好きなDOM指定できる
+        domOverlay: { root: document.body },
       });
       document.body.appendChild(button);
     }
-  }, []);
+  }, [renderer]);
 
   const handleEnterAR = async () => {
     if (store) {
@@ -85,7 +84,7 @@ export default function Page() {
         style={{ backgroundColor: "transparent" }}
         onCreated={({ gl }) => {
           gl.xr.setReferenceSpaceType("local");
-          rendererRef.current = gl;
+          setRenderer(gl);
         }}
       >
         {store && (
