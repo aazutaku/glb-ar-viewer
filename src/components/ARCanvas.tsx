@@ -1,30 +1,11 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
-import { useRef, useState } from "react";
-import * as THREE from "three";
-
-function DebugFrame({
-  meshRef,
-}: {
-  meshRef: React.RefObject<THREE.Mesh | null>;
-}) {
-  const { camera } = useThree();
-  useFrame(() => {
-    if (meshRef.current) {
-      const distance = 1;
-      const direction = new THREE.Vector3(0, 1, -distance);
-      direction.applyQuaternion(camera.quaternion);
-      const newPosition = camera.position.clone().add(direction);
-      meshRef.current.position.copy(newPosition);
-    }
-  });
-  return null;
-}
+import { useState } from "react";
 
 export default function ARCanvas() {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const [red, setRed] = useState(false);
   const [store] = useState(() =>
     createXRStore({
       customSessionInit: {
@@ -52,24 +33,15 @@ export default function ARCanvas() {
         </button>
       </div>
 
-      <Canvas
-        style={{ backgroundColor: "transparent" }}
-        onCreated={({ gl }) => {
-          gl.xr.enabled = true;
-          gl.xr.setReferenceSpaceType("local");
-        }}
-      >
+      <Canvas>
         <XR store={store}>
-          <ambientLight />
-          <directionalLight position={[1, 2, 3]} />
-          <DebugFrame meshRef={meshRef} />
           <mesh
-            ref={meshRef}
             pointerEventsType={{ deny: "grab" }}
+            onClick={() => setRed(!red)}
             position={[0, 1, -1]}
           >
             <boxGeometry />
-            <meshBasicMaterial color="red" />
+            <meshBasicMaterial color={red ? "red" : "blue"} />
           </mesh>
         </XR>
       </Canvas>
