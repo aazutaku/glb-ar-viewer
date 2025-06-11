@@ -36,7 +36,7 @@ export default function ARCanvas() {
       <Canvas
         style={{ backgroundColor: "transparent" }}
         onCreated={({ gl }) => {
-          gl.xr.enabled = true;
+          // gl.xr.enabled = true;
           gl.xr.setReferenceSpaceType("local");
         }}
       >
