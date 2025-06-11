@@ -1,10 +1,17 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { XR, createXRStore, XRStore } from "@react-three/xr";
+import { XR, createXRStore } from "@react-three/xr";
 import { useEffect, useState, useRef } from "react";
 import * as THREE from "three";
 import { ARButton } from "three/examples/jsm/webxr/ARButton.js";
+
+const store = createXRStore({
+  customSessionInit: {
+    requiredFeatures: ["local"],
+    optionalFeatures: ["hit-test", "anchors", "dom-overlay"],
+  },
+});
 
 function DebugFrame({
   meshRef,
@@ -30,25 +37,13 @@ function isIOS() {
 }
 
 export default function Page() {
-  const [store, setStore] = useState<XRStore | null>(null);
   const [red, setRed] = useState(false);
   const meshRef = useRef<THREE.Mesh>(null);
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
 
   useEffect(() => {
-    if (typeof document !== "undefined") {
-      const newStore = createXRStore({
-        customSessionInit: {
-          requiredFeatures: ["local"],
-          optionalFeatures: ["hit-test", "anchors", "dom-overlay"],
-        },
-      });
-      setStore(newStore);
-    }
-  }, []);
-
-  useEffect(() => {
     if (isIOS() && renderer) {
+      console.log("isIOS-ARBUTTON-CREATE");
       const button = ARButton.createButton(renderer, {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         domOverlay: { root: document.body },
@@ -87,22 +82,20 @@ export default function Page() {
           setRenderer(gl);
         }}
       >
-        {store && (
-          <XR store={store}>
-            <ambientLight />
-            <directionalLight position={[1, 2, 3]} />
-            <DebugFrame meshRef={meshRef} />
-            <mesh
-              ref={meshRef}
-              pointerEventsType={{ deny: "grab" }}
-              onClick={() => setRed(!red)}
-              position={[0, 1, -1]}
-            >
-              <boxGeometry />
-              <meshBasicMaterial color={red ? "red" : "blue"} />
-            </mesh>
-          </XR>
-        )}
+        <XR store={store}>
+          <ambientLight />
+          <directionalLight position={[1, 2, 3]} />
+          <DebugFrame meshRef={meshRef} />
+          <mesh
+            ref={meshRef}
+            pointerEventsType={{ deny: "grab" }}
+            onClick={() => setRed(!red)}
+            position={[0, 1, -1]}
+          >
+            <boxGeometry />
+            <meshBasicMaterial color={red ? "red" : "blue"} />
+          </mesh>
+        </XR>
       </Canvas>
     </div>
   );
