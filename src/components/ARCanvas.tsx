@@ -24,6 +24,7 @@ function DebugFrame({
 }
 
 export default function ARCanvas() {
+  const [red, setRed] = useState(false);
   const meshRef = useRef<THREE.Mesh>(null);
   const [store] = useState(() =>
     createXRStore({
@@ -52,18 +53,24 @@ export default function ARCanvas() {
         </button>
       </div>
 
-      <Canvas style={{ backgroundColor: "transparent" }}>
+      <Canvas
+        style={{ backgroundColor: "transparent" }}
+        onCreated={({ gl }) => {
+          gl.xr.enabled = true;
+          gl.xr.setReferenceSpaceType("local");
+        }}
+      >
         <XR store={store}>
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
           <DebugFrame meshRef={meshRef} />
           <mesh
-            ref={meshRef}
             pointerEventsType={{ deny: "grab" }}
+            onClick={() => setRed(!red)}
             position={[0, 1, -1]}
           >
             <boxGeometry />
-            <meshBasicMaterial color="red" />
+            <meshBasicMaterial color={red ? "red" : "blue"} />
           </mesh>
         </XR>
       </Canvas>
