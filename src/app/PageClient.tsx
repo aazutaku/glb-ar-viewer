@@ -11,7 +11,9 @@ const ARCanvas = dynamic(() => import("@/components/ARCanvas"), { ssr: false });
 
 export default function Page() {
   const searchParams = useSearchParams();
-  const defaultUrl = searchParams.get("url");
+  const key = searchParams.get("key");
+  const defaultUrl = key ? `/api/model?key=${encodeURIComponent(key)}` : null;
+
   const [glbUrl, setGlbUrl] = useState<string | null>(null);
 
   useEffect(() => {
