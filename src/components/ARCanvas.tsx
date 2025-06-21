@@ -78,7 +78,7 @@ export default function ARCanvas({ glbUrl }: Props) {
 
           <mesh
             pointerEventsType={{ deny: "grab" }}
-            position={[0, 1, -1]}
+            position={[0, 0, -1]}
           >
             <boxGeometry />
             <meshBasicMaterial color={"red"} />
