@@ -75,6 +75,14 @@ export default function ARCanvas({ glbUrl }: Props) {
         <XR store={store}>
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
+
+          <mesh
+            pointerEventsType={{ deny: "grab" }}
+            position={[0, 1, -1]}
+          >
+            <boxGeometry />
+            <meshBasicMaterial color={"red"} />
+          </mesh>
           <Suspense>{glbUrl && <GLBModel url={glbUrl} />}</Suspense>
         </XR>
       </Canvas>
