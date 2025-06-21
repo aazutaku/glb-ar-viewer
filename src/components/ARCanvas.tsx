@@ -28,6 +28,7 @@ export default function ARCanvas({ glbUrl }: Props) {
     if (navigator.xr) {
       navigator.xr.isSessionSupported("immersive-ar").then(setIsARSupported);
       navigator.xr.isSessionSupported("immersive-vr").then(setIsVRSupported);
+      setIsVRSupported(true)
     }
   }, []);
 
