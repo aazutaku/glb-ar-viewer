@@ -21,14 +21,11 @@ export default function ARCanvas({ glbUrl }: Props) {
   );
 
   const [isARSupported, setIsARSupported] = useState(false);
-  const [isVRSupported, setIsVRSupported] = useState(false);
 
-  // チェック: ブラウザがAR/VRに対応しているか
+  // チェック: ブラウザがARに対応しているか
   useEffect(() => {
     if (navigator.xr) {
       navigator.xr.isSessionSupported("immersive-ar").then(setIsARSupported);
-      //navigator.xr.isSessionSupported("immersive-vr").then(setIsVRSupported);
-      setIsVRSupported(true)
     }
   }, []);
 
@@ -36,13 +33,9 @@ export default function ARCanvas({ glbUrl }: Props) {
     if (store) await store.enterAR();
   };
 
-  const handleEnterVR = async () => {
-    if (store) await store.enterVR(); // XR store 経由で enterVR を呼べる
-  };
-
   return (
     <div className="w-screen h-screen relative">
-      <div className="absolute top-4 left-4 z-10 flex gap-4">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-4">
         {isARSupported && (
           <button
             onClick={handleEnterAR}
@@ -51,15 +44,7 @@ export default function ARCanvas({ glbUrl }: Props) {
             Enter AR
           </button>
         )}
-        {isVRSupported && (
-          <button
-            onClick={handleEnterVR}
-            className="p-3 bg-white text-black rounded"
-          >
-            Enter VR
-          </button>
-        )}
-        {!isARSupported && !isVRSupported && (
+        {!isARSupported && (
           <span className="p-3 bg-red-200 text-black rounded">
             WebXR not supported
           </span>
@@ -76,14 +61,6 @@ export default function ARCanvas({ glbUrl }: Props) {
         <XR store={store}>
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
-
-          {/* <mesh
-            pointerEventsType={{ deny: "grab" }}
-            position={[0, 0, -1]}
-          >
-            <boxGeometry />
-            <meshBasicMaterial color={"red"} />
-          </mesh> */}
           <Suspense>{glbUrl && <GLBModel url={glbUrl} />}</Suspense>
         </XR>
       </Canvas>
