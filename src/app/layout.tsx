@@ -28,12 +28,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Script
-          src="https://launchar.app/sdk/v1?key=s8kxT9zIxw8osh89raNWgU3dUSbBO0WW&redirect=true"
-          strategy="beforeInteractive"
-        />
         {children}
       </body>
+      <Script
+        src="https://launchar.app/sdk/v1?key=s8kxT9zIxw8osh89raNWgU3dUSbBO0WW&redirect=true"
+        strategy="beforeInteractive"
+      />
     </html>
   );
 }
