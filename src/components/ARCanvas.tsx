@@ -58,12 +58,12 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
             Enter AR
           </button>
         )}
-        {!isARSupported && (
+        {!isARSupported && !isIOS && (
           <span className="p-3 bg-red-200 text-black rounded">
             WebXR not supported
           </span>
         )}
-        {isIOS && (
+        {!isARSupported && isIOS && (
           <a href={launcherURL} className="p-3 bg-blue-500 text-white rounded">
             iOSはこちら
           </a>
