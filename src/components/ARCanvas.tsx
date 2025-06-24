@@ -1,17 +1,31 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { XR, createXRStore } from "@react-three/xr";
+import {
+  XR,
+  XRHitTest,
+  createXRStore,
+  useXRInputSourceStateContext,
+} from "@react-three/xr";
 import { Suspense, useEffect, useRef, useState } from "react";
 import GLBModel from "./GLBModel";
+import { Matrix4, Quaternion, Vector3 } from "three";
 
 type Props = {
   glbUrl: string | null;
   launcherURL: string;
 };
 
+type Pose = {
+  position: Vector3;
+  quaternion: Quaternion;
+  scale: Vector3;
+};
+
 export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
 
@@ -20,8 +34,33 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
     if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
   }, []);
 
-  const [store] = useState(() =>
-    createXRStore({
+  const [store] = useState(() => {
+    function ScreenInputHitTest() {
+      const { inputSource } = useXRInputSourceStateContext("screenInput");
+      const matrixHelper = new Matrix4();
+      const posHelper = new Vector3();
+      const quatHelper = new Quaternion();
+      const scaleHelper = new Vector3(1, 1, 1);
+      return (
+        <XRHitTest
+          space={inputSource.targetRaySpace}
+          onResults={(results, getWorldMatrix) => {
+            if (!results.length) return;
+            // 行列を取得して分解
+            getWorldMatrix(matrixHelper, results[0]);
+            matrixHelper.decompose(posHelper, quatHelper, scaleHelper);
+            // 配置位置をステートに保存
+            setPlacedPose({
+              position: posHelper.clone(),
+              quaternion: quatHelper.clone(),
+              scale: scaleHelper.clone(),
+            });
+          }}
+        />
+      );
+    }
+
+    return createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
@@ -31,8 +70,10 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
             : document.createElement("div"),
         },
       },
-    })
-  );
+      hitTest: true,
+      screenInput: ScreenInputHitTest,
+    });
+  });
 
   const [isARSupported, setIsARSupported] = useState(false);
 
@@ -80,7 +121,21 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
         <XR store={store}>
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
-          <Suspense>{glbUrl && <GLBModel url={glbUrl} />}</Suspense>
+
+          {/* 平面検出＆モデル配置のロジックはここに追加 */}
+          {/* 例: XRHitTest で hitPose を取得 → setPlacedPose(hitPose) */}
+
+          <Suspense fallback={null}>
+            {glbUrl && placedPose && (
+              <group
+                position={placedPose.position}
+                quaternion={placedPose.quaternion}
+                scale={placedPose.scale}
+              >
+                <GLBModel url={glbUrl} />
+              </group>
+            )}
+          </Suspense>
         </XR>
       </Canvas>
     </div>
