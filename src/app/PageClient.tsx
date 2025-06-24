@@ -14,10 +14,10 @@ export default function Page() {
   const key = searchParams.get("key");
   const defaultUrl = key ? `/api/model?key=${encodeURIComponent(key)}` : null;
   const launcherURL = key
-    ? `https://launchar.app/launch/glb-ar-viewer?url=https%3A%2F%2Fglb-ar-viewer.vercel.app?key=${encodeURIComponent(
+    ? `https://launchar.app/launch/glb-ar-viewer?url=https%3A%2F%2Fglb-ar-viewer.hack-lab.app?key=${encodeURIComponent(
         key
       )}`
-    : "https://launchar.app/launch/glb-ar-viewer?url=https%3A%2F%2Fglb-ar-viewer.vercel.app";
+    : "https://launchar.app/launch/glb-ar-viewer?url=https%3A%2F%2Fglb-ar-viewer.hack-lab.app";
 
   const [glbUrl, setGlbUrl] = useState<string | null>(null);
 
