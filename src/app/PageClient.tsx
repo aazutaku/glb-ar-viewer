@@ -13,6 +13,11 @@ export default function Page() {
   const searchParams = useSearchParams();
   const key = searchParams.get("key");
   const defaultUrl = key ? `/api/model?key=${encodeURIComponent(key)}` : null;
+  const launcherURL = key
+    ? `https://launchar.app/launch/glb-ar-viewer?url=https%3A%2F%2Fglb-ar-viewer.vercel.app?key=${encodeURIComponent(
+        key
+      )}`
+    : "https://launchar.app/launch/glb-ar-viewer?url=https%3A%2F%2Fglb-ar-viewer.vercel.app";
 
   const [glbUrl, setGlbUrl] = useState<string | null>(null);
 
@@ -33,7 +38,9 @@ export default function Page() {
   };
 
   return (
-    <div className={`w-screen h-screen relative bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white ${orbitron.variable} font-sans`}>
+    <div
+      className={`w-screen h-screen relative bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white ${orbitron.variable} font-sans`}
+    >
       <AnimatePresence>
         {!glbUrl && (
           <motion.div
@@ -73,7 +80,9 @@ export default function Page() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <h2 className="text-xl font-semibold mb-2 text-cyan-300">How to Use</h2>
+              <h2 className="text-xl font-semibold mb-2 text-cyan-300">
+                How to Use
+              </h2>
               <p className="text-sm text-gray-300">（後で説明をここに追加）</p>
             </motion.div>
 
@@ -83,7 +92,9 @@ export default function Page() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              <h2 className="text-xl font-semibold mb-2 text-indigo-300">Sponsored</h2>
+              <h2 className="text-xl font-semibold mb-2 text-indigo-300">
+                Sponsored
+              </h2>
               <p className="text-sm text-gray-300">（広告スペース）</p>
             </motion.div>
 
@@ -93,14 +104,18 @@ export default function Page() {
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
             >
-              <a href="/terms" className="underline mr-4">利用規約</a>
-              <a href="/privacy" className="underline">プライバシーポリシー</a>
+              <a href="/terms" className="underline mr-4">
+                利用規約
+              </a>
+              <a href="/privacy" className="underline">
+                プライバシーポリシー
+              </a>
             </motion.footer>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {glbUrl && <ARCanvas glbUrl={glbUrl} />}
+      {glbUrl && <ARCanvas glbUrl={glbUrl} launcherURL={launcherURL} />}
     </div>
   );
 }

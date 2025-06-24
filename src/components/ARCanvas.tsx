@@ -4,20 +4,16 @@ import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
 import { Suspense, useEffect, useRef, useState } from "react";
 import GLBModel from "./GLBModel";
-import NextImage from "next/image";
 
 type Props = {
   glbUrl: string | null;
+  launcherURL: string;
 };
 
-export default function ARCanvas({ glbUrl }: Props) {
+export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isIOS, setIsIOS] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const launcherURL =
-    "https://launchar.app/launch/glb-ar-viewer?url=https%3A%2F%2Fglb-ar-viewer.vercel.app";
-  const launcherQrPath = "/img/launchar-app/glb-ar-viewer-launch-code.png";
 
   useEffect(() => {
     const ua = window.navigator.userAgent;
@@ -68,40 +64,11 @@ export default function ARCanvas({ glbUrl }: Props) {
           </span>
         )}
         {isIOS && (
-          <button
-            onClick={() => setShowModal(true)}
-            className="p-3 bg-blue-500 text-white rounded"
-          >
-            iOSで見る方法
-          </button>
+          <a href={launcherURL} className="p-3 bg-blue-500 text-white rounded">
+            iOSはこちら
+          </a>
         )}
       </div>
-
-      {/* iOS用モーダル */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-20">
-          <div className="bg-white rounded-lg p-6 max-w-xs w-full space-y-4">
-            <h2 className="text-lg font-bold">iOSで見るには</h2>
-            <p className="break-words text-sm">{launcherURL}</p>
-            <div className="flex justify-center">
-              <NextImage
-                src={launcherQrPath}
-                alt="QRコード"
-                width={160}
-                height={160}
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-            <button
-              onClick={() => setShowModal(false)}
-              className="mt-2 w-full p-2 bg-gray-200 rounded"
-            >
-              閉じる
-            </button>
-          </div>
-        </div>
-      )}
 
       <Canvas
         style={{ backgroundColor: "transparent" }}
