@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import GLBModel from "./GLBModel";
 
 type Props = {
@@ -10,12 +10,18 @@ type Props = {
 };
 
 export default function ARCanvas({ glbUrl }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const [store] = useState(() =>
     createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
-        domOverlay: { root: document.body },
+        domOverlay: {
+          root: containerRef.current
+            ? containerRef.current
+            : document.createElement("div"),
+        },
       },
     })
   );
@@ -34,7 +40,7 @@ export default function ARCanvas({ glbUrl }: Props) {
   };
 
   return (
-    <div className="w-screen h-screen relative">
+    <div ref={containerRef} className="w-screen h-screen relative">
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-4">
         {isARSupported && (
           <button
