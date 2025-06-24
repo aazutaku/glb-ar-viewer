@@ -1,77 +1,27 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import {
-  XR,
-  createXRStore,
-  XRHitTest,
-  useXRInputSourceStateContext,
-} from "@react-three/xr";
+import { XR, createXRStore } from "@react-three/xr";
 import { Suspense, useEffect, useState } from "react";
 import GLBModel from "./GLBModel";
-import { Matrix4, Quaternion, Vector3 } from "three";
 
 type Props = {
   glbUrl: string | null;
 };
 
-type Pose = {
-  position: Vector3;
-  quaternion: Quaternion;
-  scale: Vector3;
-};
-
 export default function ARCanvas({ glbUrl }: Props) {
-  // ——————————————
-  // 2) 配置確定フラグ
-  // ——————————————
-  const [placedPose, setPlacedPose] = useState<Pose | null>(null);
-
-  // ——————————————
-  // 1. XR Store の作成
-  //    hitTest を true にすると、内部で XRHitTestSource が要求されます
-  // ——————————————
-  const [store] = useState(() => {
-    function ScreenInputHitTest() {
-      const { inputSource } = useXRInputSourceStateContext("screenInput");
-      const matrixHelper = new Matrix4();
-      const posHelper = new Vector3();
-      const quatHelper = new Quaternion();
-      const scaleHelper = new Vector3(1, 1, 1);
-      return (
-        <XRHitTest
-          space={inputSource.targetRaySpace}
-          onResults={(results, getWorldMatrix) => {
-            if (!results.length) return;
-            // 行列を取得して分解
-            getWorldMatrix(matrixHelper, results[0]);
-            matrixHelper.decompose(posHelper, quatHelper, scaleHelper);
-            // 配置位置をステートに保存
-            setPlacedPose({
-              position: posHelper.clone(),
-              quaternion: quatHelper.clone(),
-              scale: scaleHelper.clone(),
-            });
-          }}
-        />
-      );
-    }
-
-    return createXRStore({
+  const [store] = useState(() =>
+    createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
         domOverlay: { root: document.body },
       },
-      hitTest: true,
-      screenInput: ScreenInputHitTest,
-    });
-  });
+    })
+  );
 
-  // ——————————————
-  // 2. AR 対応チェック
-  // ——————————————
   const [isARSupported, setIsARSupported] = useState(false);
+
   // チェック: ブラウザがARに対応しているか
   useEffect(() => {
     if (navigator.xr) {
@@ -79,9 +29,6 @@ export default function ARCanvas({ glbUrl }: Props) {
     }
   }, []);
 
-  // ——————————————
-  // 3. AR に移動
-  // ——————————————
   const handleEnterAR = async () => {
     if (store) await store.enterAR();
   };
@@ -114,21 +61,7 @@ export default function ARCanvas({ glbUrl }: Props) {
         <XR store={store}>
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
-
-          {/* placedPose が null の間だけ平面検出 */}
-          {!placedPose && <></>}
-
-          <Suspense fallback={null}>
-            {glbUrl && placedPose && (
-              <group
-                position={placedPose.position}
-                quaternion={placedPose.quaternion}
-                scale={placedPose.scale}
-              >
-                <GLBModel url={glbUrl} />
-              </group>
-            )}
-          </Suspense>
+          <Suspense>{glbUrl && <GLBModel url={glbUrl} />}</Suspense>
         </XR>
       </Canvas>
     </div>
