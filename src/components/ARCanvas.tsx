@@ -1,27 +1,26 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { XR, XRHitTest, createXRStore } from "@react-three/xr";
+import { XR, createXRStore } from "@react-three/xr";
 import { Suspense, useEffect, useRef, useState } from "react";
 import GLBModel from "./GLBModel";
-import { Matrix4, Quaternion, Vector3 } from "three";
 
 type Props = {
   glbUrl: string | null;
   launcherURL: string;
 };
 
-type Pose = {
-  position: Vector3;
-  quaternion: Quaternion;
-  scale: Vector3;
-};
+// type Pose = {
+//   position: Vector3;
+//   quaternion: Quaternion;
+//   scale: Vector3;
+// };
 
 export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [hitPose, setHitPose] = useState<Pose | null>(null);
-  const [placedPose, setPlacedPose] = useState<Pose | null>(null);
+  // const [hitPose, setHitPose] = useState<Pose | null>(null);
+  // const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
 
@@ -58,10 +57,10 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
     if (store) await store.enterAR();
   };
 
-  const mat = new Matrix4();
-  const pos = new Vector3();
-  const quat = new Quaternion();
-  const scl = new Vector3(1, 1, 1);
+  // const mat = new Matrix4();
+  // const pos = new Vector3();
+  // const quat = new Quaternion();
+  // const scl = new Vector3(1, 1, 1);
 
   return (
     <div ref={containerRef} className="w-screen h-screen relative">
@@ -98,7 +97,7 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           <directionalLight position={[1, 2, 3]} />
 
           {/* 1) ヒットテスト：必ず viewer-space */}
-          <XRHitTest
+          {/* <XRHitTest
             trackableType="plane"
             onResults={(results, getWorldMatrix) => {
               console.log("▶ hit-test results:", results);
@@ -112,13 +111,13 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
                 scale: scl.clone(),
               });
             }}
-          />
+          /> */}
 
           {/* 平面検出＆モデル配置のロジックはここに追加 */}
           {/* 例: XRHitTest で hitPose を取得 → setPlacedPose(hitPose) */}
           <Suspense fallback={null}>
             {/* 2) プレビュー表示 */}
-            {glbUrl && hitPose && !placedPose && (
+            {/* {glbUrl && hitPose && !placedPose && (
               <group
                 position={hitPose.position}
                 quaternion={hitPose.quaternion}
@@ -130,9 +129,9 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
               >
                 <GLBModel url={glbUrl} />
               </group>
-            )}
+            )} */}
             {/* 3) 確定配置表示 */}
-            {glbUrl && placedPose && (
+            {/* {glbUrl && placedPose && (
               <group
                 position={placedPose.position}
                 quaternion={placedPose.quaternion}
@@ -140,7 +139,8 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
               >
                 <GLBModel url={glbUrl} />
               </group>
-            )}
+            )} */}
+            {glbUrl && <GLBModel url={glbUrl} />}
           </Suspense>
         </XR>
       </Canvas>
