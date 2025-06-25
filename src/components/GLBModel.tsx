@@ -13,7 +13,5 @@ export default function GLBModel({ url }: { url: string }) {
     };
   }, [url]);
 
-  return (
-    <primitive object={scene} scale={[1, 1, 1]} position={[0, -0.5, -1]} />
-  );
+  return <primitive object={scene} scale={[1, 1, 1]} />;
 }
