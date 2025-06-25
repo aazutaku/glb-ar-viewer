@@ -20,6 +20,7 @@ type Pose = {
 export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [hitPose, setHitPose] = useState<Pose | null>(null);
   const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
@@ -30,29 +31,6 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   }, []);
 
   const [store] = useState(() => {
-    function ScreenInputHitTest() {
-      const matrixHelper = new Matrix4();
-      const posHelper = new Vector3();
-      const quatHelper = new Quaternion();
-      const scaleHelper = new Vector3(1, 1, 1);
-      return (
-        <XRHitTest
-          onResults={(results, getWorldMatrix) => {
-            if (!results.length) return;
-            // 行列を取得して分解
-            getWorldMatrix(matrixHelper, results[0]);
-            matrixHelper.decompose(posHelper, quatHelper, scaleHelper);
-            // 配置位置をステートに保存
-            setPlacedPose({
-              position: posHelper.clone(),
-              quaternion: quatHelper.clone(),
-              scale: scaleHelper.clone(),
-            });
-          }}
-        />
-      );
-    }
-
     return createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
@@ -64,7 +42,6 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
         },
       },
       hitTest: true,
-      screenInput: ScreenInputHitTest,
     });
   });
 
@@ -80,6 +57,11 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const handleEnterAR = async () => {
     if (store) await store.enterAR();
   };
+
+  const mat = new Matrix4();
+  const pos = new Vector3();
+  const quat = new Quaternion();
+  const scl = new Vector3(1, 1, 1);
 
   return (
     <div ref={containerRef} className="w-screen h-screen relative">
@@ -115,14 +97,35 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
 
+          {/* 1) ヒットテスト：必ず viewer-space */}
+          <XRHitTest
+            onResults={(results, getWorldMatrix) => {
+              if (results.length === 0) return;
+              getWorldMatrix(mat, results[0]);
+              mat.decompose(pos, quat, scl);
+              setHitPose({
+                position: pos.clone(),
+                quaternion: quat.clone(),
+                scale: scl.clone(),
+              });
+            }}
+          />
+
           {/* 平面検出＆モデル配置のロジックはここに追加 */}
           {/* 例: XRHitTest で hitPose を取得 → setPlacedPose(hitPose) */}
-
-          {/* <Suspense fallback={null}>
-            {glbUrl && !placedPose && <GLBModel url={glbUrl} />}
-          </Suspense> */}
-
           <Suspense fallback={null}>
+            {/* 2) プレビュー表示 */}
+            {glbUrl && hitPose && !placedPose && (
+              <group
+                position={hitPose.position}
+                quaternion={hitPose.quaternion}
+                scale={hitPose.scale}
+                onClick={() => setPlacedPose(hitPose)}
+              >
+                <GLBModel url={glbUrl} />
+              </group>
+            )}
+            {/* 3) 確定配置表示 */}
             {glbUrl && placedPose && (
               <group
                 position={placedPose.position}
