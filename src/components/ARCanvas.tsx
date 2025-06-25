@@ -99,6 +99,7 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
 
           {/* 1) ヒットテスト：必ず viewer-space */}
           <XRHitTest
+            trackableType="plane"
             onResults={(results, getWorldMatrix) => {
               if (results.length === 0) return;
               getWorldMatrix(mat, results[0]);
