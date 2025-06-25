@@ -90,7 +90,7 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
         style={{ backgroundColor: "transparent" }}
         onCreated={({ gl }) => {
           gl.xr.enabled = true;
-          gl.xr.setReferenceSpaceType("local");
+          gl.xr.setReferenceSpaceType("viewer");
         }}
       >
         <XR store={store}>
