@@ -101,9 +101,11 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           <XRHitTest
             trackableType="plane"
             onResults={(results, getWorldMatrix) => {
+              console.log("▶ hit-test results:", results);
               if (results.length === 0) return;
               getWorldMatrix(mat, results[0]);
               mat.decompose(pos, quat, scl);
+              console.log("▶ decomposed pose:", pos, quat, scl);
               setHitPose({
                 position: pos.clone(),
                 quaternion: quat.clone(),
@@ -121,7 +123,10 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
                 position={hitPose.position}
                 quaternion={hitPose.quaternion}
                 scale={hitPose.scale}
-                onClick={() => setPlacedPose(hitPose)}
+                onClick={() => {
+                  console.log("▶ place at hitPose:", hitPose);
+                  setPlacedPose(hitPose);
+                }}
               >
                 <GLBModel url={glbUrl} />
               </group>
