@@ -118,9 +118,9 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           {/* 平面検出＆モデル配置のロジックはここに追加 */}
           {/* 例: XRHitTest で hitPose を取得 → setPlacedPose(hitPose) */}
 
-          <Suspense fallback={null}>
+          {/* <Suspense fallback={null}>
             {glbUrl && !placedPose && <GLBModel url={glbUrl} />}
-          </Suspense>
+          </Suspense> */}
 
           <Suspense fallback={null}>
             {glbUrl && placedPose && (
