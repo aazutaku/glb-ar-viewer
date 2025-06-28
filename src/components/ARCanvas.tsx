@@ -77,7 +77,7 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   };
 
   useEffect(() => {
-    console.log("hitPose更新")
+    console.log("hitPose更新", hitPose)
     hitPoseRef.current = hitPose; // 最新のhitPoseを追跡
   }, [hitPose]);
 
