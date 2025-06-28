@@ -30,8 +30,8 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
     if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
   }, []);
 
-  const [store] = useState(() => {
-    return createXRStore({
+  const [store] = useState(() =>
+    createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
@@ -42,12 +42,11 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
         },
       },
       hitTest: true,
-    });
-  });
+    })
+  );
 
   const [isARSupported, setIsARSupported] = useState(false);
 
-  // チェック: ブラウザがARに対応しているか
   useEffect(() => {
     if (navigator.xr) {
       navigator.xr.isSessionSupported("immersive-ar").then(setIsARSupported);
@@ -63,10 +62,23 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const quat = new Quaternion();
   const scl = new Vector3(1, 1, 1);
 
+  const handleConfirmPlacement = () => {
+    if (hitPose) {
+      setPlacedPose(hitPose);
+      setHitPose(null);
+    }
+  };
+
+  const handleResetPlacement = () => {
+    setHitPose(null);
+    setPlacedPose(null);
+  };
+
   return (
     <div ref={containerRef} className="w-screen h-screen relative">
+      {/* UIボタン類 */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex gap-4">
-        {isARSupported && (
+        {isARSupported && !placedPose && !hitPose && (
           <button
             onClick={handleEnterAR}
             className="p-3 bg-white text-black rounded"
@@ -84,8 +96,26 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
             iOSはこちら
           </a>
         )}
+        {/* プレビュー中の操作 */}
+        {hitPose && !placedPose && (
+          <>
+            <button
+              onClick={handleConfirmPlacement}
+              className="p-3 bg-green-500 text-white rounded"
+            >
+              配置確定
+            </button>
+            <button
+              onClick={handleResetPlacement}
+              className="p-3 bg-gray-500 text-white rounded"
+            >
+              やり直し
+            </button>
+          </>
+        )}
       </div>
 
+      {/* Canvas + AR内容 */}
       <Canvas
         style={{ backgroundColor: "transparent" }}
         onCreated={({ gl }) => {
@@ -97,45 +127,50 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           <ambientLight />
           <directionalLight position={[1, 2, 3]} />
 
-          {/* 1) ヒットテスト：必ず viewer-space */}
-          <XRHitTest
-            trackableType="plane"
-            onResults={(results, getWorldMatrix) => {
-              console.log("▶ hit-test results:", results);
-              if (results.length === 0) return;
-              getWorldMatrix(mat, results[0]);
-              mat.decompose(pos, quat, scl);
-              console.log("▶ decomposed pose:", pos, quat, scl);
-              console.log("✅ Rendering preview:", {
-                glbUrl,
-                hitPose,
-                placedPose,
-                condition: glbUrl && hitPose && !placedPose,
-              });
-              setHitPose({
-                position: pos.clone(),
-                quaternion: quat.clone(),
-                scale: scl.clone(),
-              });
-            }}
-          />
+          {/* ① 平面検出：最初のヒットだけ使う */}
+          {!hitPose && !placedPose && (
+            <XRHitTest
+              trackableType="plane"
+              onResults={(results, getWorldMatrix) => {
+                if (results.length === 0) return;
+                getWorldMatrix(mat, results[0]);
+                mat.decompose(pos, quat, scl);
 
-          {/* 平面検出＆モデル配置のロジックはここに追加 */}
-          {/* 例: XRHitTest で hitPose を取得 → setPlacedPose(hitPose) */}
+                const pose: Pose = {
+                  position: pos.clone(),
+                  quaternion: quat.clone(),
+                  scale: scl.clone(),
+                };
+
+                console.log("✅ 初回 hitPose 設定:", pose);
+                setHitPose(pose);
+              }}
+            />
+          )}
+
           <Suspense fallback={null}>
-            {/* 2) プレビュー表示 */}
-            {glbUrl && hitPose && !placedPose && (
-              <group
-                position={hitPose.position}
-                onClick={() => {
-                  console.log("▶ place at hitPose:", hitPose);
-                  setPlacedPose(hitPose);
-                }}
-              >
-                <GLBModel url={glbUrl} />
+
+            {/* ③ プレビュー表示 */}
+            {glbUrl && !hitPose && !placedPose && (
+              <group position={[0, 0, -1]}>
+                <mesh >
+                  <sphereGeometry args={[0.02, 16, 16]} />
+                  <meshStandardMaterial color="red" />
+                </mesh>
               </group>
             )}
-            {/* 3) 確定配置表示 */}
+
+            {/* ③ プレビュー表示 */}
+            {glbUrl && hitPose && !placedPose && (
+              <group position={hitPose.position}>
+                <mesh>
+                  <sphereGeometry args={[0.02, 16, 16]} />
+                  <meshStandardMaterial color="lime" />
+                </mesh>
+              </group>
+            )}
+
+            {/* ⑤ 確定表示 */}
             {glbUrl && placedPose && (
               <group
                 position={placedPose.position}
