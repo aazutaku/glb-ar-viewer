@@ -84,15 +84,6 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
             iOSはこちら
           </a>
         )}
-
-        {hitPose && (
-          <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
-            <div><strong>Hit Pose</strong></div>
-            <div>Position: {hitPose.position.toArray().map(n => n.toFixed(2)).join(', ')}</div>
-            <div>Quaternion: {hitPose.quaternion.toArray().map(n => n.toFixed(2)).join(', ')}</div>
-            <div>Scale: {hitPose.scale.toArray().map(n => n.toFixed(2)).join(', ')}</div>
-          </div>
-        )}
       </div>
 
       <Canvas
@@ -114,6 +105,7 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
               if (results.length === 0) return;
               getWorldMatrix(mat, results[0]);
               mat.decompose(pos, quat, scl);
+              console.log("▶ decomposed pose:", pos, quat, scl);
               console.log("✅ Rendering preview:", {
                 glbUrl,
                 hitPose,
@@ -132,20 +124,6 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           {/* 例: XRHitTest で hitPose を取得 → setPlacedPose(hitPose) */}
           <Suspense fallback={null}>
             {/* 2) プレビュー表示 */}
-            {glbUrl && !hitPose && !placedPose && (
-              <group
-                position={[0, 0, -1]}
-                onClick={() => {
-                  console.log("▶ place at hitPose:", hitPose);
-                  setPlacedPose(hitPose);
-                }}
-              >
-                <mesh>
-                  <boxGeometry args={[0.1, 0.1, 0.1]} />
-                  <meshStandardMaterial color="red" />
-                </mesh>
-              </group>
-            )}
             {glbUrl && hitPose && !placedPose && (
               <group
                 position={hitPose.position}
@@ -154,10 +132,6 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
                   setPlacedPose(hitPose);
                 }}
               >
-                <mesh>
-                  <boxGeometry args={[0.1, 0.1, 0.1]} />
-                  <meshStandardMaterial color="orange" />
-                </mesh>
                 <GLBModel url={glbUrl} />
               </group>
             )}
