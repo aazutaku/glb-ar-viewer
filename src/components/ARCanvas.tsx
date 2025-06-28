@@ -84,6 +84,15 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
             iOSはこちら
           </a>
         )}
+
+        {hitPose && (
+          <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white p-2 rounded text-sm z-20">
+            <div><strong>Hit Pose</strong></div>
+            <div>Position: {hitPose.position.toArray().map(n => n.toFixed(2)).join(', ')}</div>
+            <div>Quaternion: {hitPose.quaternion.toArray().map(n => n.toFixed(2)).join(', ')}</div>
+            <div>Scale: {hitPose.scale.toArray().map(n => n.toFixed(2)).join(', ')}</div>
+          </div>
+        )}
       </div>
 
       <Canvas
