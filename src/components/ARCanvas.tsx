@@ -20,8 +20,9 @@ type Pose = {
 export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [hitPoseStatus, setHitPoseStatus] = useState<boolean>(false);
   const [hitPose, setHitPose] = useState<Pose | null>(null);
+  const hitPoseRef = useRef<Pose | null>(null);
+
   const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
@@ -75,6 +76,11 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
     setPlacedPose(null);
   };
 
+  useEffect(() => {
+    console.log("hitPose更新")
+    hitPoseRef.current = hitPose; // 最新のhitPoseを追跡
+  }, [hitPose]);
+
   return (
     <div ref={containerRef} className="w-screen h-screen relative">
       {/* UIボタン類 */}
@@ -98,7 +104,7 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           </a>
         )}
         {/* プレビュー中の操作 */}
-        {hitPoseStatus && !placedPose && (
+        {hitPose && !placedPose && (
           <>
             <button
               onClick={handleConfirmPlacement}
@@ -143,9 +149,16 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
                   scale: scl.clone(),
                 };
 
-                console.log("✅ 初回 hitPose 設定:", pose);
-                setHitPose(pose);
-                setHitPoseStatus(true);
+                if (
+                  !hitPoseRef.current ||
+                  !hitPoseRef.current.position.equals(pose.position) ||
+                  !hitPoseRef.current.quaternion.equals(pose.quaternion)
+                ) {
+                  console.log("✅ 初回 hitPose 設定:", pose);
+                  setHitPose(pose);
+                } else {
+                  console.log("⏭️ 同じposeなのでスキップ");
+                }
               }}
             />
           )}
