@@ -105,7 +105,12 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
               if (results.length === 0) return;
               getWorldMatrix(mat, results[0]);
               mat.decompose(pos, quat, scl);
-              console.log("▶ decomposed pose:", pos, quat, scl);
+              console.log("✅ Rendering preview:", {
+                glbUrl,
+                hitPose,
+                placedPose,
+                condition: glbUrl && hitPose && !placedPose,
+              });
               setHitPose({
                 position: pos.clone(),
                 quaternion: quat.clone(),
@@ -118,6 +123,20 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           {/* 例: XRHitTest で hitPose を取得 → setPlacedPose(hitPose) */}
           <Suspense fallback={null}>
             {/* 2) プレビュー表示 */}
+            {glbUrl && !hitPose && !placedPose && (
+              <group
+                position={[0, 0, -1]}
+                onClick={() => {
+                  console.log("▶ place at hitPose:", hitPose);
+                  setPlacedPose(hitPose);
+                }}
+              >
+                <mesh>
+                  <boxGeometry args={[0.1, 0.1, 0.1]} />
+                  <meshStandardMaterial color="red" />
+                </mesh>
+              </group>
+            )}
             {glbUrl && hitPose && !placedPose && (
               <group
                 position={hitPose.position}
@@ -126,6 +145,10 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
                   setPlacedPose(hitPose);
                 }}
               >
+                <mesh>
+                  <boxGeometry args={[0.1, 0.1, 0.1]} />
+                  <meshStandardMaterial color="orange" />
+                </mesh>
                 <GLBModel url={glbUrl} />
               </group>
             )}
