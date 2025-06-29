@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
 import { Suspense, useEffect, useState } from "react";
 import GLBModel from "./GLBModel";
+import { SlidersHorizontal } from "lucide-react";
 
 type Props = {
   glbUrl: string | null;
@@ -87,96 +88,97 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
       </div>
 
       {/* 位置調整トグルボタン */}
-      <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-30">
+      <div className="absolute bottom-6 right-6 z-40">
         <button
           onClick={() => setShowControls(!showControls)}
-          className="px-4 py-2 bg-yellow-300 text-black rounded"
+          className="w-12 h-12 flex items-center justify-center 
+               bg-gray-700/70 hover:bg-gray-600/70 
+               text-white rounded-full shadow-xl 
+               backdrop-blur-md border border-white/10 
+               transition"
+          title="Adjust"
         >
-          {showControls ? "調整を閉じる" : "位置調整"}
+          <SlidersHorizontal size={24} />
         </button>
       </div>
 
       {/* コントローラーUI */}
       {showControls && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-auto">
-          {/* 移動 */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => move(0, 0, -0.1)}
-                  className="p-2 bg-white rounded"
-                >
-                  奥へ
-                </button>
-                <button
-                  onClick={() => move(0, 0, 0.1)}
-                  className="p-2 bg-white rounded"
-                >
-                  手前へ
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => move(-0.1, 0, 0)}
-                  className="p-2 bg-white rounded"
-                >
-                  ←
-                </button>
-                <button
-                  onClick={() => move(0.1, 0, 0)}
-                  className="p-2 bg-white rounded"
-                >
-                  →
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => move(0, 0.1, 0)}
-                  className="p-2 bg-white rounded"
-                >
-                  ⬆︎
-                </button>
-                <button
-                  onClick={() => move(0, -0.1, 0)}
-                  className="p-2 bg-white rounded"
-                >
-                  ⬇︎
-                </button>
-              </div>
+        <div className="absolute bottom-20 right-6 z-30 bg-[#111]/90 p-4 rounded-xl shadow-xl text-white font-mono text-xs space-y-4 border border-gray-700 backdrop-blur-md w-[150px]">
+          {/* Translate Controls */}
+          <div>
+            <div className="mb-2 font-bold text-cyan-400 tracking-wide text-sm">
+              Translate
+            </div>
+            <div className="space-y-1.5">
+              {["X", "Y", "Z"].map((axis, i) => (
+                <div key={axis} className="flex items-center gap-2">
+                  <span className="w-6 text-cyan-300">{axis}:</span>
+                  <button
+                    onClick={() =>
+                      move(
+                        i === 0 ? 0.1 : 0,
+                        i === 1 ? 0.1 : 0,
+                        i === 2 ? 0.1 : 0
+                      )
+                    }
+                    className="w-9 h-9 rounded-lg bg-cyan-700 hover:bg-cyan-500 text-white font-bold shadow transition"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() =>
+                      move(
+                        i === 0 ? -0.1 : 0,
+                        i === 1 ? -0.1 : 0,
+                        i === 2 ? -0.1 : 0
+                      )
+                    }
+                    className="w-9 h-9 rounded-lg bg-cyan-700 hover:bg-cyan-500 text-white font-bold shadow transition"
+                  >
+                    −
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* 回転 */}
-          <div className="flex gap-4 mt-2">
-            <button
-              onClick={() => rotate(0, -0.1, 0)}
-              className="p-2 bg-white rounded"
-            >
-              ↺
-            </button>
-            <button
-              onClick={() => rotate(0, 0.1, 0)}
-              className="p-2 bg-white rounded"
-            >
-              ↻
-            </button>
-          </div>
-
-          {/* ピッチ回転（X軸） */}
-          <div className="flex gap-4 mt-2">
-            <button
-              onClick={() => rotate(-0.1, 0, 0)}
-              className="p-2 bg-white rounded"
-            >
-              ⤴
-            </button>
-            <button
-              onClick={() => rotate(0.1, 0, 0)}
-              className="p-2 bg-white rounded"
-            >
-              ⤵
-            </button>
+          {/* Rotate Controls */}
+          <div>
+            <div className="mb-2 font-bold text-green-400 tracking-wide text-sm">
+              Rotate
+            </div>
+            <div className="space-y-1.5">
+              {["Rx", "Ry", "Rz"].map((axis, i) => (
+                <div key={axis} className="flex items-center gap-2">
+                  <span className="w-6 text-green-300">{axis}:</span>
+                  <button
+                    onClick={() =>
+                      rotate(
+                        i === 0 ? 0.1 : 0,
+                        i === 1 ? 0.1 : 0,
+                        i === 2 ? 0.1 : 0
+                      )
+                    }
+                    className="w-9 h-9 rounded-lg bg-green-700 hover:bg-green-500 text-white font-bold shadow transition"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() =>
+                      rotate(
+                        i === 0 ? -0.1 : 0,
+                        i === 1 ? -0.1 : 0,
+                        i === 2 ? -0.1 : 0
+                      )
+                    }
+                    className="w-9 h-9 rounded-lg bg-green-700 hover:bg-green-500 text-white font-bold shadow transition"
+                  >
+                    −
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
