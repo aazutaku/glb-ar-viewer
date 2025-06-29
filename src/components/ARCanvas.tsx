@@ -144,7 +144,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
             <directionalLight position={[1, 2, 3]} />
 
             {/* ① 平面検出：最初のヒットだけ使う */}
-            {mode === "enterAR" && (
+            {(mode === "enterAR" || mode === "hitTest") && (
               <XRHitTest
                 trackableType="plane"
                 onResults={(results, getWorldMatrix) => {
