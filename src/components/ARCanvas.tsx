@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function ARCanvas({ glbUrl, launcherURL }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(document.createElement("div"));
 
   const [mode, setMode] = useState<"start" | "enterAR" | "hitTest" | "placed">(
     "start"
@@ -30,20 +30,18 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
     if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
   }, []);
 
-  const [store] = useState(() => {
-    return createXRStore({
+  const [store] = useState(() =>
+    createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
         domOverlay: {
-          root: containerRef.current
-            ? containerRef.current
-            : document.createElement("div"),
+          root: containerRef.current,
         },
       },
       hitTest: true,
-    });
-  });
+    })
+  );
 
   const [isARSupported, setIsARSupported] = useState(false);
 
