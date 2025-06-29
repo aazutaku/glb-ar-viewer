@@ -197,7 +197,11 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
               {/* ⑤ 確定表示 */}
               {glbUrl && mode === "placed" && placedPose && (
                 <group
-                  position={placedPose.position}
+                  position={[
+                    placedPose.position.x,
+                    placedPose.position.y - 0.3, // ← ここで地面に下げる
+                    placedPose.position.z,
+                  ]}
                   quaternion={placedPose.quaternion}
                   scale={[1, 1, 1]}
                 >
