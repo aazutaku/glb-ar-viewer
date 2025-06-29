@@ -162,10 +162,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
               {/* ③ プレビュー表示 */}
               {glbUrl && mode === "hitTest" && hitTestPosition && (
                 <group position={hitTestPosition}>
-                  <mesh>
-                    <sphereGeometry args={[0.02, 16, 16]} />
-                    <meshStandardMaterial color="lime" />
-                  </mesh>
+                  <GLBModel url={glbUrl} />
                 </group>
               )}
 
