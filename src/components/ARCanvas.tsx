@@ -15,8 +15,12 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   const [store, setStore] = useState<ReturnType<typeof createXRStore> | null>(
     null
   );
-
   const [isIOS, setIsIOS] = useState(false);
+  const [isARSupported, setIsARSupported] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+
+  const [position, setPosition] = useState<[number, number, number]>([0, 0, 0]);
+  const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -29,7 +33,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
           root: containerRef.current,
         },
       },
-      hitTest: true,
+      hitTest: false,
     });
 
     setStore(storeInstance);
@@ -39,8 +43,6 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
     const ua = window.navigator.userAgent;
     if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
   }, []);
-
-  const [isARSupported, setIsARSupported] = useState(false);
 
   useEffect(() => {
     if (navigator.xr) {
@@ -52,10 +54,18 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
     if (store) await store.enterAR();
   };
 
+  const move = (dx: number, dy: number, dz: number) => {
+    setPosition(([x, y, z]) => [x + dx, y + dy, z + dz]);
+  };
+
+  const rotate = (dx: number, dy: number, dz: number) => {
+    setRotation(([rx, ry, rz]) => [rx + dx, ry + dy, rz + dz]);
+  };
+
   return (
     <>
-      {/* UIボタン類 */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-4">
+      {/* AR開始 or エラー表示 */}
+      <div className="absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex gap-4">
         {isARSupported && (
           <button
             onClick={handleEnterAR}
@@ -75,7 +85,103 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
           </a>
         )}
       </div>
-      {/* Canvas + AR内容 */}
+
+      {/* 位置調整トグルボタン */}
+      <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-30">
+        <button
+          onClick={() => setShowControls(!showControls)}
+          className="px-4 py-2 bg-yellow-300 text-black rounded"
+        >
+          {showControls ? "調整を閉じる" : "位置調整"}
+        </button>
+      </div>
+
+      {/* コントローラーUI */}
+      {showControls && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-auto">
+          {/* 移動 */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => move(0, 0, -0.1)}
+                  className="p-2 bg-white rounded"
+                >
+                  奥へ
+                </button>
+                <button
+                  onClick={() => move(0, 0, 0.1)}
+                  className="p-2 bg-white rounded"
+                >
+                  手前へ
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => move(-0.1, 0, 0)}
+                  className="p-2 bg-white rounded"
+                >
+                  ←
+                </button>
+                <button
+                  onClick={() => move(0.1, 0, 0)}
+                  className="p-2 bg-white rounded"
+                >
+                  →
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => move(0, 0.1, 0)}
+                  className="p-2 bg-white rounded"
+                >
+                  ⬆︎
+                </button>
+                <button
+                  onClick={() => move(0, -0.1, 0)}
+                  className="p-2 bg-white rounded"
+                >
+                  ⬇︎
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 回転 */}
+          <div className="flex gap-4 mt-2">
+            <button
+              onClick={() => rotate(0, -0.1, 0)}
+              className="p-2 bg-white rounded"
+            >
+              ↺
+            </button>
+            <button
+              onClick={() => rotate(0, 0.1, 0)}
+              className="p-2 bg-white rounded"
+            >
+              ↻
+            </button>
+          </div>
+
+          {/* ピッチ回転（X軸） */}
+          <div className="flex gap-4 mt-2">
+            <button
+              onClick={() => rotate(-0.1, 0, 0)}
+              className="p-2 bg-white rounded"
+            >
+              ⤴
+            </button>
+            <button
+              onClick={() => rotate(0.1, 0, 0)}
+              className="p-2 bg-white rounded"
+            >
+              ⤵
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AR Canvas */}
       {store && (
         <Canvas
           style={{ backgroundColor: "transparent" }}
@@ -87,14 +193,11 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
           <XR store={store}>
             <ambientLight />
             <directionalLight position={[1, 2, 3]} />
-
             <Suspense fallback={null}>
-              {/* ずっと表示されるモデル */}
               {glbUrl && (
-                <group position={[0, 0, 0]}>
+                <group position={position} rotation={rotation}>
                   <GLBModel url={glbUrl} />
-
-                  {/* デバッグプレーンとマーカー */}
+                  {/* Debug プレーンとマーカー */}
                   <mesh rotation={[-Math.PI / 2, 0, 0]}>
                     <planeGeometry args={[0.5, 0.5]} />
                     <meshStandardMaterial
