@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Orbitron } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,6 +10,7 @@ const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" });
 const ARCanvas = dynamic(() => import("@/components/ARCanvas"), { ssr: false });
 
 export default function Page() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams();
   const key = searchParams.get("key");
   const defaultUrl = key ? `/api/model?key=${encodeURIComponent(key)}` : null;
@@ -115,7 +116,18 @@ export default function Page() {
         )}
       </AnimatePresence>
 
-      {glbUrl && <ARCanvas glbUrl={glbUrl} launcherURL={launcherURL} />}
+      {glbUrl && (
+        <div
+          ref={containerRef}
+          className="w-screen h-screen relative bg-transparent"
+        >
+          <ARCanvas
+            glbUrl={glbUrl}
+            launcherURL={launcherURL}
+            containerRef={containerRef}
+          />
+        </div>
+      )}
     </div>
   );
 }

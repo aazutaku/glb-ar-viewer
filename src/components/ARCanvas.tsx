@@ -2,18 +2,17 @@
 
 import { Canvas } from "@react-three/fiber";
 import { XR, XRHitTest, createXRStore } from "@react-three/xr";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import GLBModel from "./GLBModel";
 import { Matrix4, Vector3 } from "three";
 
 type Props = {
   glbUrl: string | null;
   launcherURL: string;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 };
 
-export default function ARCanvas({ glbUrl, launcherURL }: Props) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
+export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   const [store, setStore] = useState<ReturnType<typeof createXRStore> | null>(
     null
   );
@@ -30,14 +29,9 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    const ua = window.navigator.userAgent;
-    if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
-  }, []);
-
-  useEffect(() => {
     if (!containerRef.current) return;
 
-    const newStore = createXRStore({
+    const storeInstance = createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
@@ -48,8 +42,13 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
       hitTest: true,
     });
 
-    setStore(newStore);
+    setStore(storeInstance);
   }, [containerRef]);
+
+  useEffect(() => {
+    const ua = window.navigator.userAgent;
+    if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
+  }, []);
 
   const [isARSupported, setIsARSupported] = useState(false);
 
@@ -83,12 +82,9 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   };
 
   return (
-    <div className="w-screen h-screen relative bg-transparent">
+    <>
       {/* UIボタン類 */}
-      <div
-        ref={containerRef}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-4"
-      >
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-4">
         {isARSupported && mode === "start" && (
           <button
             onClick={handleEnterAR}
@@ -186,6 +182,6 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
           </XR>
         </Canvas>
       )}
-    </div>
+    </>
   );
 }
