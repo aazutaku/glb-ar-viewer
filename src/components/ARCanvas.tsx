@@ -29,7 +29,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   const matrixHelper: Matrix4 = new Matrix4();
   const [hitTestPose, setHitTestPose] = useState<Pose | null>(null);
 
-  // const [placedPose, setPlacedPose] = useState<Pose | null>(null);
+  const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
 
@@ -81,7 +81,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
     if (hitTestPose) {
       console.log("HitTestPosition", hitTestPose.position.clone());
       setMode("placed");
-      // setPlacedPose(hitTestPose);
+      setPlacedPose(hitTestPose);
     }
   };
 
@@ -191,20 +191,23 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
               )}
 
               {/* ⑤ 確定表示 */}
-              {/* {glbUrl && mode === "placed" && placedPose && (
+              {glbUrl && mode === "placed" && placedPose && (
                 <group
                   position={placedPose.position}
                   quaternion={placedPose.quaternion}
                   scale={[1, 1, 1]}
                 >
                   <GLBModel url={glbUrl} />
-                  <meshStandardMaterial
-                    color="blue"
-                    transparent
-                    opacity={0.5}
-                  />
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+                    <planeGeometry args={[0.5, 0.5]} />
+                    <meshStandardMaterial
+                      color="blue"
+                      transparent
+                      opacity={0.5}
+                    />
+                  </mesh>
                 </group>
-              )} */}
+              )}
             </Suspense>
           </XR>
         </Canvas>
