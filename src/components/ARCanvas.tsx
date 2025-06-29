@@ -64,16 +64,16 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   };
 
   const handleHitTest = (positon: Vector3) => {
-    console.log("HitTestPosition", positon);
+    console.log("HitTestPosition", positon.clone());
     setMode("hitTest");
-    setHitTestPosition(positon);
+    setHitTestPosition(positon.clone());
   };
 
   const handleConfirmPlacement = () => {
     if (hitTestPosition) {
-      console.log("PlacedPosition", hitTestPosition);
+      console.log("PlacedPosition", hitTestPosition.clone());
       setMode("placed");
-      setPlacedPosition(hitTestPosition);
+      setPlacedPosition(hitTestPosition.clone());
     }
   };
 
