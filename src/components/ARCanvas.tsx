@@ -176,6 +176,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                 <group
                   position={hitTestPose.position}
                   quaternion={hitTestPose.quaternion}
+                  scale={[1, 1, 1]}
                 >
                   <GLBModel url={glbUrl} />
                 </group>
@@ -186,6 +187,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                 <group
                   position={placedPose.position}
                   quaternion={placedPose.quaternion}
+                  scale={[1, 1, 1]}
                 >
                   <GLBModel url={glbUrl} />
                 </group>
