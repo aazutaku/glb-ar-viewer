@@ -1,12 +1,12 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useRef } from "react";
+import { Suspense, useRef } from "react";
 import dynamic from "next/dynamic";
 
 const ARCanvas = dynamic(() => import("@/components/ARCanvas"), { ssr: false });
 
-export default function ARPage() {
+function InnerARPage() {
   const searchParams = useSearchParams();
   const glbUrl = searchParams.get("url");
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -30,5 +30,13 @@ export default function ARPage() {
         containerRef={containerRef}
       />
     </div>
+  );
+}
+
+export default function ARPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InnerARPage />
+    </Suspense>
   );
 }
