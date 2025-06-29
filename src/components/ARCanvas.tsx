@@ -30,8 +30,8 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
     if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
   }, []);
 
-  const [store] = useState(() =>
-    createXRStore({
+  const [store] = useState(() => {
+    return createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
@@ -42,8 +42,8 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
         },
       },
       hitTest: true,
-    })
-  );
+    });
+  });
 
   const [isARSupported, setIsARSupported] = useState(false);
 
