@@ -12,7 +12,11 @@ type Props = {
 };
 
 export default function ARCanvas({ glbUrl, launcherURL }: Props) {
-  const containerRef = useRef<HTMLDivElement>(document.createElement("div"));
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [store, setStore] = useState<ReturnType<typeof createXRStore> | null>(
+    null
+  );
 
   const [mode, setMode] = useState<"start" | "enterAR" | "hitTest" | "placed">(
     "start"
@@ -30,8 +34,10 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
     if (/iPad|iPhone|iPod/.test(ua)) setIsIOS(true);
   }, []);
 
-  const [store] = useState(() =>
-    createXRStore({
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const newStore = createXRStore({
       customSessionInit: {
         requiredFeatures: ["local", "hit-test", "dom-overlay"],
         optionalFeatures: ["anchors"],
@@ -40,8 +46,10 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
         },
       },
       hitTest: true,
-    })
-  );
+    });
+
+    setStore(newStore);
+  }, [containerRef]);
 
   const [isARSupported, setIsARSupported] = useState(false);
 
@@ -119,61 +127,63 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
       </div>
 
       {/* Canvas + AR内容 */}
-      <Canvas
-        style={{ backgroundColor: "transparent" }}
-        onCreated={({ gl }) => {
-          gl.xr.enabled = true;
-          gl.xr.setReferenceSpaceType("viewer");
-        }}
-      >
-        <XR store={store}>
-          <ambientLight />
-          <directionalLight position={[1, 2, 3]} />
+      {store && (
+        <Canvas
+          style={{ backgroundColor: "transparent" }}
+          onCreated={({ gl }) => {
+            gl.xr.enabled = true;
+            gl.xr.setReferenceSpaceType("viewer");
+          }}
+        >
+          <XR store={store}>
+            <ambientLight />
+            <directionalLight position={[1, 2, 3]} />
 
-          {/* ① 平面検出：最初のヒットだけ使う */}
-          {mode === "enterAR" && (
-            <XRHitTest
-              trackableType="plane"
-              onResults={(results, getWorldMatrix) => {
-                if (results.length === 0) return;
-                getWorldMatrix(matrixHelper, results[0]);
-                handleHitTest(
-                  new Vector3().setFromMatrixPosition(matrixHelper)
-                );
-              }}
-            />
-          )}
-
-          <Suspense fallback={null}>
-            {/* ③ プレビュー表示 */}
-            {glbUrl && mode === "enterAR" && (
-              <group position={[0, 0, -1]}>
-                <mesh>
-                  <sphereGeometry args={[0.02, 16, 16]} />
-                  <meshStandardMaterial color="red" />
-                </mesh>
-              </group>
+            {/* ① 平面検出：最初のヒットだけ使う */}
+            {mode === "enterAR" && (
+              <XRHitTest
+                trackableType="plane"
+                onResults={(results, getWorldMatrix) => {
+                  if (results.length === 0) return;
+                  getWorldMatrix(matrixHelper, results[0]);
+                  handleHitTest(
+                    new Vector3().setFromMatrixPosition(matrixHelper)
+                  );
+                }}
+              />
             )}
 
-            {/* ③ プレビュー表示 */}
-            {glbUrl && mode === "hitTest" && hitTestPosition && (
-              <group position={hitTestPosition}>
-                <mesh>
-                  <sphereGeometry args={[0.02, 16, 16]} />
-                  <meshStandardMaterial color="lime" />
-                </mesh>
-              </group>
-            )}
+            <Suspense fallback={null}>
+              {/* ③ プレビュー表示 */}
+              {glbUrl && mode === "enterAR" && (
+                <group position={[0, 0, -1]}>
+                  <mesh>
+                    <sphereGeometry args={[0.02, 16, 16]} />
+                    <meshStandardMaterial color="red" />
+                  </mesh>
+                </group>
+              )}
 
-            {/* ⑤ 確定表示 */}
-            {glbUrl && mode === "placed" && placedPosition && (
-              <group position={placedPosition}>
-                <GLBModel url={glbUrl} />
-              </group>
-            )}
-          </Suspense>
-        </XR>
-      </Canvas>
+              {/* ③ プレビュー表示 */}
+              {glbUrl && mode === "hitTest" && hitTestPosition && (
+                <group position={hitTestPosition}>
+                  <mesh>
+                    <sphereGeometry args={[0.02, 16, 16]} />
+                    <meshStandardMaterial color="lime" />
+                  </mesh>
+                </group>
+              )}
+
+              {/* ⑤ 確定表示 */}
+              {glbUrl && mode === "placed" && placedPosition && (
+                <group position={placedPosition}>
+                  <GLBModel url={glbUrl} />
+                </group>
+              )}
+            </Suspense>
+          </XR>
+        </Canvas>
+      )}
     </div>
   );
 }
