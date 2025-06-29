@@ -198,6 +198,11 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                   scale={[1, 1, 1]}
                 >
                   <GLBModel url={glbUrl} />
+                  <meshStandardMaterial
+                    color="blue"
+                    transparent
+                    opacity={0.5}
+                  />
                 </group>
               )}
             </Suspense>
