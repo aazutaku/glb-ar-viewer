@@ -4,12 +4,17 @@ import { Canvas } from "@react-three/fiber";
 import { XR, XRHitTest, createXRStore } from "@react-three/xr";
 import { Suspense, useEffect, useState } from "react";
 import GLBModel from "./GLBModel";
-import { Matrix4, Vector3 } from "three";
+import { Matrix4, Quaternion, Vector3 } from "three";
 
 type Props = {
   glbUrl: string | null;
   launcherURL: string;
   containerRef: React.RefObject<HTMLDivElement | null>;
+};
+
+type Pose = {
+  position: Vector3;
+  quaternion: Quaternion;
 };
 
 export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
@@ -22,9 +27,9 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   );
 
   const matrixHelper: Matrix4 = new Matrix4();
-  const [hitTestPosition, setHitTestPosition] = useState<Vector3 | null>(null);
+  const [hitTestPose, setHitTestPose] = useState<Pose | null>(null);
 
-  const [placedPosition, setPlacedPosition] = useState<Vector3 | null>(null);
+  const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
 
@@ -63,22 +68,25 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
     setMode("enterAR");
   };
 
-  const handleHitTest = (positon: Vector3) => {
-    console.log("HitTestPosition", positon.clone());
+  const handleHitTest = (pose: Pose) => {
+    console.log("HitTestPosition", pose.position.clone());
     setMode("hitTest");
-    setHitTestPosition(positon.clone());
+    setHitTestPose({
+      position: pose.position.clone(),
+      quaternion: pose.quaternion.clone(),
+    });
   };
 
   const handleConfirmPlacement = () => {
-    if (hitTestPosition) {
-      console.log("PlacedPosition", hitTestPosition.clone());
+    if (hitTestPose) {
+      console.log("HitTestPosition", hitTestPose.position.clone());
       setMode("placed");
-      setPlacedPosition(hitTestPosition.clone());
+      setPlacedPose(hitTestPose);
     }
   };
 
   const handleResetPlacement = () => {
-    setHitTestPosition(null);
+    setHitTestPose(null);
     setMode("enterAR");
   };
 
@@ -142,9 +150,12 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                 onResults={(results, getWorldMatrix) => {
                   if (results.length === 0) return;
                   getWorldMatrix(matrixHelper, results[0]);
-                  handleHitTest(
-                    new Vector3().setFromMatrixPosition(matrixHelper)
-                  );
+                  handleHitTest({
+                    position: new Vector3().setFromMatrixPosition(matrixHelper),
+                    quaternion: new Quaternion().setFromRotationMatrix(
+                      matrixHelper
+                    ),
+                  });
                 }}
               />
             )}
@@ -161,15 +172,21 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
               )}
 
               {/* ③ プレビュー表示 */}
-              {glbUrl && mode === "hitTest" && hitTestPosition && (
-                <group position={hitTestPosition}>
+              {glbUrl && mode === "hitTest" && hitTestPose && (
+                <group
+                  position={hitTestPose.position}
+                  quaternion={hitTestPose.quaternion}
+                >
                   <GLBModel url={glbUrl} />
                 </group>
               )}
 
               {/* ⑤ 確定表示 */}
-              {glbUrl && mode === "placed" && placedPosition && (
-                <group position={placedPosition}>
+              {glbUrl && mode === "placed" && placedPose && (
+                <group
+                  position={placedPose.position}
+                  quaternion={placedPose.quaternion}
+                >
                   <GLBModel url={glbUrl} />
                 </group>
               )}
