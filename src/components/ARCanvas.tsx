@@ -59,6 +59,7 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
   };
 
   const handleHitTest = (positon: Vector3) => {
+    console.log("hitTest", positon);
     setMode("hitTest");
     setHitTestPosition(positon);
   };
