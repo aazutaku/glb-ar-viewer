@@ -1,9 +1,10 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { XR, createXRStore } from "@react-three/xr";
+import { XR, XRHitTest, createXRStore } from "@react-three/xr";
 import { Suspense, useEffect, useState } from "react";
 import GLBModel from "./GLBModel";
+import { Matrix4, Quaternion, Vector3 } from "three";
 
 type Props = {
   glbUrl: string | null;
@@ -11,10 +12,24 @@ type Props = {
   containerRef: React.RefObject<HTMLDivElement | null>;
 };
 
+type Pose = {
+  position: Vector3;
+  quaternion: Quaternion;
+};
+
 export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   const [store, setStore] = useState<ReturnType<typeof createXRStore> | null>(
     null
   );
+
+  const [mode, setMode] = useState<"start" | "enterAR" | "hitTest" | "placed">(
+    "start"
+  );
+
+  const matrixHelper: Matrix4 = new Matrix4();
+  const [hitTestPose, setHitTestPose] = useState<Pose | null>(null);
+
+  const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
 
@@ -50,13 +65,36 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
 
   const handleEnterAR = async () => {
     if (store) await store.enterAR();
+    setMode("enterAR");
+  };
+
+  const handleHitTest = (pose: Pose) => {
+    console.log("HitTestPosition", pose.position.clone());
+    setMode("hitTest");
+    setHitTestPose({
+      position: pose.position.clone(),
+      quaternion: pose.quaternion.clone(),
+    });
+  };
+
+  const handleConfirmPlacement = () => {
+    if (hitTestPose) {
+      console.log("HitTestPosition", hitTestPose.position.clone());
+      setMode("placed");
+      setPlacedPose(hitTestPose);
+    }
+  };
+
+  const handleResetPlacement = () => {
+    setHitTestPose(null);
+    setMode("enterAR");
   };
 
   return (
     <>
       {/* UIボタン類 */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-4">
-        {isARSupported && (
+        {isARSupported && mode === "start" && (
           <button
             onClick={handleEnterAR}
             className="p-3 bg-white text-black rounded"
@@ -64,15 +102,32 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
             Enter AR
           </button>
         )}
-        {!isARSupported && !isIOS && (
+        {!isARSupported && !isIOS && mode === "start" && (
           <span className="p-3 bg-red-200 text-black rounded">
             WebXR not supported
           </span>
         )}
-        {!isARSupported && isIOS && (
+        {!isARSupported && isIOS && mode === "start" && (
           <a href={launcherURL} className="p-3 bg-blue-500 text-white rounded">
             iOSはこちら
           </a>
+        )}
+        {/* プレビュー中の操作 */}
+        {mode === "hitTest" && (
+          <>
+            <button
+              onClick={handleConfirmPlacement}
+              className="p-3 bg-green-500 text-white rounded"
+            >
+              配置確定
+            </button>
+            <button
+              onClick={handleResetPlacement}
+              className="p-3 bg-gray-500 text-white rounded"
+            >
+              やり直し
+            </button>
+          </>
         )}
       </div>
       {/* Canvas + AR内容 */}
@@ -88,27 +143,90 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
             <ambientLight />
             <directionalLight position={[1, 2, 3]} />
 
-            <Suspense fallback={null}>
-              {/* ずっと表示されるモデル */}
-              {glbUrl && (
-                <group position={[0, 0, -1]}>
-                  <GLBModel url={glbUrl} />
+            {/* ① 平面検出：最初のヒットだけ使う */}
+            {(mode === "enterAR" || mode === "hitTest") && (
+              <XRHitTest
+                trackableType="plane"
+                onResults={(results, getWorldMatrix) => {
+                  if (results.length === 0) return;
+                  getWorldMatrix(matrixHelper, results[0]);
+                  handleHitTest({
+                    position: new Vector3().setFromMatrixPosition(matrixHelper),
+                    quaternion: new Quaternion().setFromRotationMatrix(
+                      matrixHelper
+                    ),
+                  });
+                }}
+              />
+            )}
 
-                  {/* デバッグプレーンとマーカー */}
-                  <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <Suspense fallback={null}>
+              {/* ③ プレビュー表示 */}
+              {glbUrl && mode === "enterAR" && (
+                <group position={[0, 0, -1]}>
+                  <mesh>
+                    <sphereGeometry args={[0.02, 16, 16]} />
+                    <meshStandardMaterial color="red" />
+                  </mesh>
+                </group>
+              )}
+
+              {/* ③ プレビュー表示 */}
+              {glbUrl && mode === "hitTest" && hitTestPose && (
+                <group
+                  position={[
+                    hitTestPose.position.x,
+                    hitTestPose.position.y - 0.3, // ← ここで地面に下げる
+                    hitTestPose.position.z,
+                  ]}
+                >
+                  <GLBModel url={glbUrl} />
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
                     <planeGeometry args={[0.5, 0.5]} />
                     <meshStandardMaterial
-                      color="gray"
+                      color="red"
                       transparent
                       opacity={0.5}
                     />
                   </mesh>
-                  <mesh>
-                    <sphereGeometry args={[0.02, 16, 16]} />
-                    <meshStandardMaterial color="blue" />
+                </group>
+              )}
+
+              {/* ⑤ 確定表示 */}
+              {glbUrl && mode === "placed" && placedPose && (
+                <group
+                  position={[
+                    placedPose.position.x,
+                    placedPose.position.y - 0.3, // ← ここで地面に下げる
+                    placedPose.position.z,
+                  ]}
+                >
+                  <GLBModel url={glbUrl} />
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+                    <planeGeometry args={[0.5, 0.5]} />
+                    <meshStandardMaterial
+                      color="blue"
+                      transparent
+                      opacity={0.5}
+                    />
                   </mesh>
                 </group>
               )}
+
+              <group position={[0, 0, -1]}>
+                <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                  <planeGeometry args={[0.5, 0.5]} />
+                  <meshStandardMaterial
+                    color="gray"
+                    transparent
+                    opacity={0.5}
+                  />
+                </mesh>
+                <mesh>
+                  <sphereGeometry args={[0.02, 16, 16]} />
+                  <meshStandardMaterial color="red" />
+                </mesh>
+              </group>
             </Suspense>
           </XR>
         </Canvas>
