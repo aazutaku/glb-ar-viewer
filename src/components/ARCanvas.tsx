@@ -179,8 +179,6 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                     hitTestPose.position.y - 0.3, // ← ここで地面に下げる
                     hitTestPose.position.z,
                   ]}
-                  quaternion={hitTestPose.quaternion}
-                  scale={[1, 1, 1]}
                 >
                   <GLBModel url={glbUrl} />
                   <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
@@ -202,8 +200,6 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                     placedPose.position.y - 0.3, // ← ここで地面に下げる
                     placedPose.position.z,
                   ]}
-                  quaternion={placedPose.quaternion}
-                  scale={[1, 1, 1]}
                 >
                   <GLBModel url={glbUrl} />
                   <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
@@ -216,6 +212,17 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                   </mesh>
                 </group>
               )}
+
+              <group position={[0, -1, 0]} scale={[1, 1, 1]}>
+                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+                  <planeGeometry args={[0.5, 0.5]} />
+                  <meshStandardMaterial
+                    color="gray"
+                    transparent
+                    opacity={0.5}
+                  />
+                </mesh>
+              </group>
             </Suspense>
           </XR>
         </Canvas>
