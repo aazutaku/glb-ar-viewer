@@ -174,7 +174,11 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
               {/* ③ プレビュー表示 */}
               {glbUrl && mode === "hitTest" && hitTestPose && (
                 <group
-                  position={hitTestPose.position}
+                  position={[
+                    hitTestPose.position.x,
+                    hitTestPose.position.y - 0.3, // ← ここで地面に下げる
+                    hitTestPose.position.z,
+                  ]}
                   quaternion={hitTestPose.quaternion}
                   scale={[1, 1, 1]}
                 >
