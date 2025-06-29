@@ -179,6 +179,14 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                   scale={[1, 1, 1]}
                 >
                   <GLBModel url={glbUrl} />
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+                    <planeGeometry args={[0.5, 0.5]} />
+                    <meshStandardMaterial
+                      color="red"
+                      transparent
+                      opacity={0.5}
+                    />
+                  </mesh>
                 </group>
               )}
 
