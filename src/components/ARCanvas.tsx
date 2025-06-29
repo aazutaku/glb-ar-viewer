@@ -213,16 +213,10 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                 </group>
               )}
 
-              <group position={[0, -1, 0]} scale={[1, 1, 1]}>
-                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-                  <planeGeometry args={[0.5, 0.5]} />
-                  <meshStandardMaterial
-                    color="gray"
-                    transparent
-                    opacity={0.5}
-                  />
-                </mesh>
-              </group>
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, -1]}>
+                <planeGeometry args={[0.5, 0.5]} />
+                <meshStandardMaterial color="gray" transparent opacity={0.5} />
+              </mesh>
             </Suspense>
           </XR>
         </Canvas>
