@@ -120,9 +120,6 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
             </button>
           </>
         )}
-        <span className="p-3 bg-red-200 text-black rounded">
-          position: {hitTestPosition}
-        </span>
       </div>
       {/* Canvas + AR内容 */}
       {store && (
