@@ -29,7 +29,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   const matrixHelper: Matrix4 = new Matrix4();
   const [hitTestPose, setHitTestPose] = useState<Pose | null>(null);
 
-  const [placedPose, setPlacedPose] = useState<Pose | null>(null);
+  // const [placedPose, setPlacedPose] = useState<Pose | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
 
@@ -81,7 +81,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
     if (hitTestPose) {
       console.log("HitTestPosition", hitTestPose.position.clone());
       setMode("placed");
-      setPlacedPose(hitTestPose);
+      // setPlacedPose(hitTestPose);
     }
   };
 
@@ -191,7 +191,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
               )}
 
               {/* ⑤ 確定表示 */}
-              {glbUrl && mode === "placed" && placedPose && (
+              {/* {glbUrl && mode === "placed" && placedPose && (
                 <group
                   position={placedPose.position}
                   quaternion={placedPose.quaternion}
@@ -204,7 +204,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                     opacity={0.5}
                   />
                 </group>
-              )}
+              )} */}
             </Suspense>
           </XR>
         </Canvas>
