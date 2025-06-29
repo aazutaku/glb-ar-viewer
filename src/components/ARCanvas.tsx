@@ -115,6 +115,11 @@ export default function ARCanvas({ glbUrl, launcherURL }: Props) {
             </button>
           </>
         )}
+        {mode === "enterAR" && (
+          <span className="p-3 bg-red-200 text-black rounded">
+            position: {hitTestPosition}
+          </span>
+        )}
       </div>
 
       {/* Canvas + AR内容 */}
