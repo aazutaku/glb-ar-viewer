@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { XR, createXRStore } from "@react-three/xr";
 import { Suspense, useEffect, useState } from "react";
 import GLBModel from "./GLBModel";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Play, Pause } from "lucide-react";
 
 type Props = {
   glbUrl: string | null;
@@ -73,29 +73,34 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   return (
     <>
       {/* AR開始 or エラー表示 */}
-      <div className="absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex gap-4">
+      <div className="absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3 text-sm font-medium">
         {isARSupported && mode === "start" && (
           <button
             onClick={handleEnterAR}
-            className="p-3 bg-white text-black rounded"
+            className="px-6 py-3 rounded-xl bg-black text-white shadow-lg hover:bg-neutral-800 transition"
           >
             Enter AR
           </button>
         )}
+
         {!isARSupported && !isIOS && mode === "start" && (
-          <span className="p-3 bg-red-200 text-black rounded">
+          <div className="px-4 py-2 bg-red-100 text-red-700 rounded-lg border border-red-300 shadow">
             WebXR not supported
-          </span>
+          </div>
         )}
+
         {!isARSupported && isIOS && mode === "start" && (
-          <a href={launcherURL} className="p-3 bg-blue-500 text-white rounded">
-            iOSはこちら
+          <a
+            href={launcherURL}
+            className="px-6 py-3 rounded-xl bg-blue-500 text-white shadow hover:bg-blue-600 transition"
+          >
+            Launch on iOS
           </a>
         )}
       </div>
 
       {/* トグルボタン */}
-      {mode === "enterAR" && (
+      {mode === "start" && (
         <div className="absolute bottom-6 right-6 z-40 flex gap-3">
           {/* アニメーション トグル */}
           <button
@@ -107,7 +112,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
         transition"
             title="Toggle Animation"
           >
-            {playAnimation ? "⏸" : "▶"}
+            {playAnimation ? <Pause size={24} /> : <Play size={24} />}
           </button>
 
           {/* 位置調整 トグル */}

@@ -22,18 +22,14 @@ function InnerARPage() {
 
   return (
     <div
-      className={`w-screen h-screen relative bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white font-sans`}
+      ref={containerRef}
+      className="w-screen h-screen bg-transparent relative"
     >
-      <div
-        ref={containerRef}
-        className="w-screen h-screen bg-transparent relative"
-      >
-        <ARCanvas
-          glbUrl={glbUrl}
-          launcherURL={launcherURL}
-          containerRef={containerRef}
-        />
-      </div>
+      <ARCanvas
+        glbUrl={glbUrl}
+        launcherURL={launcherURL}
+        containerRef={containerRef}
+      />
     </div>
   );
 }
