@@ -100,7 +100,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
       </div>
 
       {/* トグルボタン */}
-      {mode === "start" && (
+      {mode === "enterAR" && (
         <div className="absolute bottom-6 right-6 z-40 flex gap-3">
           {/* アニメーション トグル */}
           <button
