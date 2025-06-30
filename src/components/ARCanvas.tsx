@@ -16,12 +16,16 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   const [store, setStore] = useState<ReturnType<typeof createXRStore> | null>(
     null
   );
+
+  const [mode, setMode] = useState<"start" | "enterAR" | "">("start");
   const [isIOS, setIsIOS] = useState(false);
   const [isARSupported, setIsARSupported] = useState(false);
-  const [showControls, setShowControls] = useState(false);
 
+  const [showControls, setShowControls] = useState(false);
   const [position, setPosition] = useState<[number, number, number]>([0, 0, 0]);
   const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
+
+  const [playAnimation, setPlayAnimation] = useState<boolean>(true);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -52,7 +56,10 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
   }, []);
 
   const handleEnterAR = async () => {
-    if (store) await store.enterAR();
+    if (store) {
+      await store.enterAR();
+      setMode("enterAR");
+    }
   };
 
   const move = (dx: number, dy: number, dz: number) => {
@@ -67,7 +74,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
     <>
       {/* AR開始 or エラー表示 */}
       <div className="absolute bottom-36 left-1/2 -translate-x-1/2 z-20 flex gap-4">
-        {isARSupported && (
+        {isARSupported && mode === "start" && (
           <button
             onClick={handleEnterAR}
             className="p-3 bg-white text-black rounded"
@@ -75,32 +82,48 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
             Enter AR
           </button>
         )}
-        {!isARSupported && !isIOS && (
+        {!isARSupported && !isIOS && mode === "start" && (
           <span className="p-3 bg-red-200 text-black rounded">
             WebXR not supported
           </span>
         )}
-        {!isARSupported && isIOS && (
+        {!isARSupported && isIOS && mode === "start" && (
           <a href={launcherURL} className="p-3 bg-blue-500 text-white rounded">
             iOSはこちら
           </a>
         )}
       </div>
 
-      {/* 位置調整トグルボタン */}
-      <div className="absolute bottom-6 right-6 z-40">
-        <button
-          onClick={() => setShowControls(!showControls)}
-          className="w-12 h-12 flex items-center justify-center 
-               bg-gray-700/70 hover:bg-gray-600/70 
-               text-white rounded-full shadow-xl 
-               backdrop-blur-md border border-white/10 
-               transition"
-          title="Adjust"
-        >
-          <SlidersHorizontal size={24} />
-        </button>
-      </div>
+      {/* トグルボタン */}
+      {mode === "enterAR" && (
+        <div className="absolute bottom-6 right-6 z-40 flex gap-3">
+          {/* アニメーション トグル */}
+          <button
+            onClick={() => setPlayAnimation((prev) => !prev)}
+            className="w-12 h-12 flex items-center justify-center 
+        bg-gray-700/70 hover:bg-gray-600/70 
+        text-white rounded-full shadow-xl 
+        backdrop-blur-md border border-white/10 
+        transition"
+            title="Toggle Animation"
+          >
+            {playAnimation ? "⏸" : "▶"}
+          </button>
+
+          {/* 位置調整 トグル */}
+          <button
+            onClick={() => setShowControls(!showControls)}
+            className="w-12 h-12 flex items-center justify-center 
+        bg-gray-700/70 hover:bg-gray-600/70 
+        text-white rounded-full shadow-xl 
+        backdrop-blur-md border border-white/10 
+        transition"
+            title="Adjust"
+          >
+            <SlidersHorizontal size={24} />
+          </button>
+        </div>
+      )}
 
       {/* コントローラーUI */}
       {showControls && (
@@ -198,7 +221,7 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
             <Suspense fallback={null}>
               {glbUrl && (
                 <group position={position} rotation={rotation}>
-                  <GLBModel url={glbUrl} />
+                  <GLBModel url={glbUrl} play={playAnimation} />
                   {/* Debug プレーンとマーカー */}
                   <mesh rotation={[-Math.PI / 2, 0, 0]}>
                     <planeGeometry args={[0.5, 0.5]} />
@@ -207,10 +230,6 @@ export default function ARCanvas({ glbUrl, launcherURL, containerRef }: Props) {
                       transparent
                       opacity={0.5}
                     />
-                  </mesh>
-                  <mesh>
-                    <sphereGeometry args={[0.02, 16, 16]} />
-                    <meshStandardMaterial color="blue" />
                   </mesh>
                 </group>
               )}

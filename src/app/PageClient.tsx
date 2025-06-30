@@ -13,13 +13,17 @@ export default function Page() {
 
   const searchParams = useSearchParams();
   const key = searchParams.get("key");
-  const defaultUrl = key ? `/api/model?key=${key}` : null;
 
   useEffect(() => {
-    if (defaultUrl) {
-      router.push(`/ar-viewer?url=${encodeURIComponent(defaultUrl)}`);
+    if (key) {
+      const defaultUrl = `/api/model?key=${key}`;
+      router.push(
+        `/ar-viewer?url=${encodeURIComponent(
+          defaultUrl
+        )}&key=${encodeURIComponent(key)}`
+      );
     }
-  }, [router, defaultUrl]);
+  }, [router, key]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
